@@ -20,7 +20,7 @@
     typedef unsigned char       BYTE;
     typedef unsigned short WORD;
     typedef unsigned int DWORD;
-    typedef unsigned __int64 ULONGLONG;
+    typedef unsigned long long ULONGLONG;
     typedef const WCHAR *LPCTSTR;
 
 typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
