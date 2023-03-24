@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tabPEHeader">
      <attribute name="title">
@@ -244,42 +244,9 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>160</x>
-        <y>20</y>
-        <width>201</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>RVA</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Size</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Raw</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
         <x>70</x>
         <y>40</y>
-        <width>291</width>
+        <width>371</width>
         <height>326</height>
        </rect>
       </property>
@@ -454,21 +421,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_42">
+          <widget class="QLabel" name="lblDDBaseRelocRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_43">
+          <widget class="QLabel" name="lblDDBaseRelocSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_44">
+          <widget class="QLabel" name="lblDDBaseRelocRAW">
            <property name="text">
             <string/>
            </property>
@@ -486,21 +453,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_46">
+          <widget class="QLabel" name="lblDDDebugRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_47">
+          <widget class="QLabel" name="lblDDDebugSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_48">
+          <widget class="QLabel" name="lblDDDebugRAW">
            <property name="text">
             <string/>
            </property>
@@ -518,21 +485,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_50">
+          <widget class="QLabel" name="lblDDCopyrightRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_51">
+          <widget class="QLabel" name="lblDDCopyrightSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_52">
+          <widget class="QLabel" name="lblDDCopyrightRAW">
            <property name="text">
             <string/>
            </property>
@@ -550,21 +517,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_54">
+          <widget class="QLabel" name="lblDDGlobalptrRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_55">
+          <widget class="QLabel" name="lblDDGlobalptrSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_56">
+          <widget class="QLabel" name="lblDDGlobalptrRAW">
            <property name="text">
             <string/>
            </property>
@@ -582,21 +549,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_58">
+          <widget class="QLabel" name="lblDDTlsRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_59">
+          <widget class="QLabel" name="lblDDTlsSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_60">
+          <widget class="QLabel" name="lblDDTlsRAW">
            <property name="text">
             <string/>
            </property>
@@ -614,21 +581,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_62">
+          <widget class="QLabel" name="lblDDLoadCfgRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_63">
+          <widget class="QLabel" name="lblDDLoadCfgSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_64">
+          <widget class="QLabel" name="lblDDLoadCfgRAW">
            <property name="text">
             <string/>
            </property>
@@ -646,21 +613,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_66">
+          <widget class="QLabel" name="lblDDBoundImportRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_67">
+          <widget class="QLabel" name="lblDDBoundImportSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_68">
+          <widget class="QLabel" name="lblDDBoundImportRAW">
            <property name="text">
             <string/>
            </property>
@@ -678,21 +645,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_70">
+          <widget class="QLabel" name="lblDDIATRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_71">
+          <widget class="QLabel" name="lblDDIATSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_72">
+          <widget class="QLabel" name="lblDDIATRAW">
            <property name="text">
             <string/>
            </property>
@@ -710,21 +677,21 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_74">
+          <widget class="QLabel" name="lblDDDelayImportRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_75">
+          <widget class="QLabel" name="lblDDDelayImportSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_76">
+          <widget class="QLabel" name="lblDDDelayImportRAW">
            <property name="text">
             <string/>
            </property>
@@ -737,32 +704,72 @@
          <item>
           <widget class="QLabel" name="label_77">
            <property name="text">
-            <string>Com Description</string>
+            <string>Com Descriptor</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_78">
+          <widget class="QLabel" name="lblDDComDescriptorRVA">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_79">
+          <widget class="QLabel" name="lblDDComDescriptorSize">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_80">
+          <widget class="QLabel" name="lblDDComDescriptorRAW">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
         </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>20</y>
+        <width>371</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>RVA</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Size</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>RAW</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
