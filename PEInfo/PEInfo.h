@@ -1,12 +1,18 @@
 #ifndef __PE_INFO__H__
 #define __PE_INFO__H__
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <vector>
 #include <string>
 #include <iostream>
 #include<iomanip>
 #include <unordered_map>
+#ifdef WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+#elif __linux__
+    #include "PELinux.h"
+#endif
+
+
 
 class ImportHintName {
 public:
@@ -96,10 +102,7 @@ public:
         }
         else {            
             return m_vecFuncAddr[dwFuncNameOrdinal];
-        }
-        
-        
-        
+        } 
     }
 private:
 	std::vector<std::string> m_vecFuncName;
@@ -113,6 +116,7 @@ class CPEInfo {
 public:
 	CPEInfo();
 	~CPEInfo();
+    void CloseMapViewAndFiles();
 	bool LoadPE(LPCTSTR pFileName);
     bool loaded() {return m_bLoaded;}
     bool readPEInfoFromMapView(void* pMapView);
@@ -164,18 +168,22 @@ public:
     WORD getDllCharacteristics() {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.DllCharacteristics : m_peHeader.x64.OptionalHeader.DllCharacteristics;
     }
+    DWORD getDataDirectoryElemCnt() {
+        return m_bX86 ? m_peHeader.x86.OptionalHeader.NumberOfRvaAndSizes : m_peHeader.x64.OptionalHeader.NumberOfRvaAndSizes;
+    }
+    IMAGE_DATA_DIRECTORY * getDataDirectory(DWORD index);
+
 private:
 	void printPEHeaderX86();
 	void printPEHeaderX64();
 	void printImgSecHeader();
 	void printDosHeader();
 	void printField(const char * field_name, const unsigned char* field_bytes, unsigned int field_length);
-	void print_section_header_info(unsigned int section_idx, const IMAGE_SECTION_HEADER& image_sec_header);
+    void printSectionHeaderInfo(unsigned int section_idx, const IMAGE_SECTION_HEADER& image_sec_header);
 	void valid_signature(unsigned char signature[]);
 	void valid_magic(unsigned char magic[]);
 	void loadOrigThunkDetail(DWORD origFirstThunk);
 	void loadFirstThunkDetail(DWORD firstThunk);
-	IMAGE_DATA_DIRECTORY * getDataDirectory(DWORD index);
 	std::string getStrFromRva(DWORD dwRva);
 	void getDWORDVecFromStartRva(DWORD dwRva, std::vector<DWORD> &vecDwValue, DWORD dwValueNum = 0);
     void getWORDVecFromStartRva(DWORD dwRva, std::vector<WORD> &vecDwValue, DWORD dwValueNum = 0);
@@ -191,11 +199,15 @@ private:
 	IMAGE_DOS_HEADER m_dosHeader;
 	bool m_bLoaded;
 	LPVOID m_pMapViewBase;
+#ifdef WIN32
 	HANDLE m_hFile;
-	DWORD m_dwFileSize;
+#elif __linux__
+    int m_fd;
+#endif
+    unsigned long long m_dwFileSize;
 	IMAGE_EXPORT_INFO_WRAPPER m_imgExportInfoWrapper;
 public:
-     bool m_bX86;
+    bool m_bX86;
 };
 
 

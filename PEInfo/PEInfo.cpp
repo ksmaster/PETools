@@ -1,24 +1,16 @@
 #include <PEInfo.h>
-
 #include <tchar.h> 
 //#include <winnt.h> // IMAGE_NT_HEADERS32
 #include <iostream>
 #include<iomanip>
 #include<cassert>
-#include <QDebug>
 using namespace std;
 
 DWORD ALIGN(DWORD x, DWORD a)  {
    return ((x + (a - 1)) & ~(a - 1));
 }
 
-#if 0
-extern void print_pe_field(const char * field_name, const unsigned char* field_bytes, unsigned int field_length);
-extern void valid_magic(unsigned char magic[]);
-extern void valid_signature(unsigned char signature[]);
-extern void print_pe_field(const char * field_name, const unsigned char* field_bytes, unsigned int field_length);
-extern void print_section_header_info(unsigned int sectionIdx, const IMAGE_SECTION_HEADER& image_sec_header);
-#endif
+
 
 void print_prompt(unsigned char cLineBuf[], unsigned int length) {
 	if (!cLineBuf) {
@@ -93,7 +85,7 @@ void CPEInfo::printField(const char * fieldName, const unsigned char* fieldBytes
 	printHexBuffer(fieldBytes, fieldLength);
 }
 
-void CPEInfo::print_section_header_info(unsigned int sectionIdx, const IMAGE_SECTION_HEADER& imageSecHeader) {
+void CPEInfo::printSectionHeaderInfo(unsigned int sectionIdx, const IMAGE_SECTION_HEADER& imageSecHeader) {
 	char secName[IMAGE_SIZEOF_SHORT_NAME + 1] = { 0 };
 	secName[IMAGE_SIZEOF_SHORT_NAME] = '\0';
 	memcpy(secName, imageSecHeader.Name, IMAGE_SIZEOF_SHORT_NAME);
@@ -126,7 +118,6 @@ void testPrintHexBuffer() {
 }
 
 
-
 void CPEInfo::printDosHeader() {
 	printField("Dos Header", (const unsigned char *)&m_dosHeader, sizeof(m_dosHeader));
 	//1.Magic  
@@ -146,10 +137,8 @@ void CPEInfo::show() {
 }
 
 DWORD CPEInfo::getCoffHeaderSize() {
-    //return m_dosHeader.e_lfanew + m_dwSizeofImageNTHeaders + m_peHeader.x86.FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER);
     DWORD dwCoffHeaderRealSize = m_dosHeader.e_lfanew + m_dwSizeofImageNTHeaders + m_peHeader.x86.FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER);
     DWORD dwFileAlignment = m_bX86 ? m_peHeader.x86.OptionalHeader.FileAlignment : m_peHeader.x64.OptionalHeader.FileAlignment;
-    qDebug() << "dwCoffHeaderRealSize: " << dwCoffHeaderRealSize ;
     return ALIGN(dwCoffHeaderRealSize, dwFileAlignment);
 }
 
@@ -260,42 +249,78 @@ void CPEInfo::printPEHeaderX64() {
 CPEInfo::CPEInfo():m_sectionNum(0),m_dwSizeofImageNTHeaders(0),
     m_bLoaded(false),
     m_pMapViewBase(nullptr),
+    #ifdef WIN32
     m_hFile(INVALID_HANDLE_VALUE),
+    #elif __linux__
+    m_fd(-1),
+    #endif
     m_dwFileSize(0),
     m_bX86(true){
 
 }
 
 CPEInfo::~CPEInfo() {
-	if (m_pMapViewBase) {
-		::UnmapViewOfFile(m_pMapViewBase);
-	}
-	if (INVALID_HANDLE_VALUE != m_hFile) {
-		CloseHandle(m_hFile);
-	}
+    CloseMapViewAndFiles();
 }
 
+void CPEInfo::CloseMapViewAndFiles() {
+#ifdef WIN32
+    if (m_pMapViewBase) {
+        ::UnmapViewOfFile(m_pMapViewBase);
+    }
+    if (INVALID_HANDLE_VALUE != m_hFile) {
+        CloseHandle(m_hFile);
+        m_hFile = INVALID_HANDLE_VALUE;
+    }
+#elif __linux__
+    if (m_pMapViewBase) {
+        ::munmap(file_in_memory, m_dwFileSize);
+    }
+    if(-1 != m_fd) {
+        close(m_fd);
+        m_fd = -1;
+    }
+#endif
+    m_pMapViewBase = nullptr;
+    m_dwFileSize = 0;
+    m_bLoaded = false;
+}
+
+
 bool CPEInfo::LoadPE(LPCTSTR pFileName) {
-	 m_hFile = CreateFile(pFileName, GENERIC_READ,
-		//FILE_SHARE_READ | FILE_SHARE_WRITE, 
-		FILE_SHARE_READ,
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
-	if (INVALID_HANDLE_VALUE == m_hFile) {
-		DWORD errCode = ::GetLastError();
-		cout << "Open File " << pFileName << " Failed: error code: " << errCode << endl;
-		return false;
-	}
-	m_dwFileSize = ::GetFileSize(m_hFile, NULL);
-	//cout << "filesize: " << dwFileSize << endl;
-	//cout << "begin craete file map" << endl;
-	HANDLE hMap = ::CreateFileMapping(m_hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-	if (hMap) {
-		m_pMapViewBase = ::MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
-		if (m_pMapViewBase) {
-            m_bLoaded = readPEInfoFromMapView(m_pMapViewBase);
-		}
-	}
-	return m_bLoaded;
+    CloseMapViewAndFiles();
+    #if defined(WIN32)
+        m_hFile = CreateFile(pFileName, GENERIC_READ,
+           FILE_SHARE_READ,
+           NULL, OPEN_EXISTING, FILE_ATTRIBUTE_ARCHIVE, NULL);
+       if (INVALID_HANDLE_VALUE == m_hFile) {
+          // DWORD errCode = ::GetLastError();
+           return false;
+       }
+       DWORD dwFileSizeHigh = 0;
+       m_dwFileSize = ::GetFileSize(m_hFile, &dwFileSizeHigh);
+       //file size is larger or equal that 4G
+       if(dwFileSizeHigh > 0) {
+            return false;
+       }
+       HANDLE hMap = ::CreateFileMapping(m_hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+       if (hMap) {
+           m_pMapViewBase = ::MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
+       }
+    #elif __linux__
+       m_fd = open("file.txt", O_RDONLY);
+       if(-1 == m_fd) {
+           return false;
+       }
+       struct stat sb;
+       fstat(m_fd, &sb);
+       m_dwFileSize = sb.st_size;
+       m_pMapViewBase = mmap(NULL, m_dwFileSize, PROT_READ, MAP_PRIVATE, fd, 0);
+    #endif
+       if (m_pMapViewBase) {
+           m_bLoaded = readPEInfoFromMapView(m_pMapViewBase);
+       }
+       return m_bLoaded;
 }
 
 bool CPEInfo::readPEInfoFromMapView(void* pMapViewBase) {
@@ -369,7 +394,7 @@ void CPEInfo::printImgSecHeader() {
 	unsigned int sectionIdx = 0;
 	for (const auto &imgSecHeader : m_vecImgSecHeader) {
 		printField("IMAGE_SECTION_HEADER", reinterpret_cast<const unsigned char *>(&imgSecHeader), sizeof(IMAGE_SECTION_HEADER));
-		print_section_header_info(sectionIdx++, imgSecHeader);
+        printSectionHeaderInfo(sectionIdx++, imgSecHeader);
 	}
 }
 
@@ -380,7 +405,7 @@ DWORD CPEInfo::rvaToFoa(DWORD rva) {
 			return imgSecHeader.PointerToRawData + (rva - imgSecHeader.VirtualAddress);
 		}
 	}
-	return 0;
+    return rva ? -1: 0;
 }
 
 DWORD CPEInfo::foaToRva(DWORD foa) {
