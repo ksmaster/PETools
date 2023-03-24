@@ -22,6 +22,7 @@
     typedef unsigned int DWORD;
     typedef unsigned long long ULONGLONG;
     typedef const WCHAR *LPCTSTR;
+    typedef void *LPVOID;
 
 typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
     WORD   e_magic;                     // Magic number
