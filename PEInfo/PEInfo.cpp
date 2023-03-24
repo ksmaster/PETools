@@ -313,7 +313,7 @@ bool CPEInfo::LoadPE(LPCTSTR pFileName) {
        struct stat sb;
        fstat(m_fd, &sb);
        m_dwFileSize = sb.st_size;
-       m_pMapViewBase = mmap(NULL, m_dwFileSize, PROT_READ, MAP_PRIVATE, fd, 0);
+       m_pMapViewBase = mmap(NULL, m_dwFileSize, PROT_READ, MAP_PRIVATE, m_fd, 0);
     #endif
        if (m_pMapViewBase) {
            m_bLoaded = readPEInfoFromMapView(m_pMapViewBase);
