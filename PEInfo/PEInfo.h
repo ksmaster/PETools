@@ -8,6 +8,7 @@
 #ifdef WIN32
     #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
+    #include <tchar.h>
 #elif __linux__
     #include "PELinux.h"
 #endif

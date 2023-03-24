@@ -1,6 +1,4 @@
 #include <PEInfo.h>
-#include <tchar.h> 
-//#include <winnt.h> // IMAGE_NT_HEADERS32
 #include <iostream>
 #include<iomanip>
 #include<cassert>
