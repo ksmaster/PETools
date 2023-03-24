@@ -10,6 +10,8 @@
     #include <fcntl.h>
     #include <unistd.h>
 
+    typedef snprintf sprintf_s;
+
     #ifndef VOID
     #define VOID void
     typedef char CHAR;
