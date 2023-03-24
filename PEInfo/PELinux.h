@@ -9,8 +9,9 @@
     #include <sys/stat.h>
     #include <fcntl.h>
     #include <unistd.h>
+    #include <stdio.h>
 
-    typedef snprintf sprintf_s;
+    typedef sprintf_s snprintf;
 
     #ifndef VOID
     #define VOID void
