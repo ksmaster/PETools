@@ -11,7 +11,7 @@
     #include <unistd.h>
     #include <stdio.h>
 
-    typedef sprintf_s snprintf;
+    typedef snprintf sprintf_s;
 
     #ifndef VOID
     #define VOID void
