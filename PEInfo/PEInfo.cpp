@@ -272,7 +272,7 @@ void CPEInfo::CloseMapViewAndFiles() {
     }
 #elif __linux__
     if (m_pMapViewBase) {
-        ::munmap(file_in_memory, m_dwFileSize);
+        ::munmap(m_pMapViewBase, m_dwFileSize);
     }
     if(-1 != m_fd) {
         close(m_fd);
@@ -528,10 +528,10 @@ void CPEInfo::loadImportDataDirectory() {
 
 	printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + importDataDirFoa, 0x40);
 
-	while (pImgImportDesc->OriginalFirstThunk || pImgImportDesc->FirstThunk || pImgImportDesc->ForwarderChain || pImgImportDesc->Name) {
+    while (pImgImportDesc->DUMMYUNIONNAME.OriginalFirstThunk || pImgImportDesc->FirstThunk || pImgImportDesc->ForwarderChain || pImgImportDesc->Name) {
 		printHexBuffer(reinterpret_cast<const unsigned char*>(pImgImportDesc), sizeof(*pImgImportDesc));
-		if (pImgImportDesc->OriginalFirstThunk) {
-			loadOrigThunkDetail(pImgImportDesc->OriginalFirstThunk);
+        if (pImgImportDesc->DUMMYUNIONNAME.OriginalFirstThunk) {
+            loadOrigThunkDetail(pImgImportDesc->DUMMYUNIONNAME.OriginalFirstThunk);
 		}
 		cout << "TimeDateStamp: " << hex << setfill('0') << setw(8) << pImgImportDesc->TimeDateStamp << endl;
 		cout << "ForwarderChain: " << hex << setfill('0') << setw(8) << pImgImportDesc->ForwarderChain << endl;
