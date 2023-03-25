@@ -319,11 +319,11 @@ bool CPEInfo::LoadPE(const char* pFileName) {
            return false;
        }
        struct stat sb;
-       qDebug << "before: m_dwFileSize: " << m_dwFileSize;
+       qDebug() << "before: m_dwFileSize: " << m_dwFileSize;
        fstat(m_fd, &sb);
-       qDebug << "end: sb.st_size: " << sb.st_size;
+       qDebug() << "end: sb.st_size: " << sb.st_size;
        m_dwFileSize = sb.st_size;
-       qDebug << "m_dwFileSize: " << m_dwFileSize;
+       qDebug() << "m_dwFileSize: " << m_dwFileSize;
        m_pMapViewBase = mmap(NULL, m_dwFileSize, PROT_READ, MAP_PRIVATE, m_fd, 0);
        qDebug << "m_pMapViewBase: " << m_pMapViewBase;
     #endif
