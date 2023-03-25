@@ -306,7 +306,7 @@ bool CPEInfo::LoadPE(LPCTSTR pFileName) {
            m_pMapViewBase = ::MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
        }
     #elif __linux__
-       m_fd = open("file.txt", O_RDONLY);
+       m_fd = open(pFileName, O_RDONLY);
        if(-1 == m_fd) {
            return false;
        }
