@@ -123,7 +123,6 @@ public:
 #elif __linux__
     bool LoadPE(const char* pFileName);
 #endif
-	bool LoadPE(LPCTSTR pFileName);
     bool loaded() {return m_bLoaded;}
     bool readPEInfoFromMapView(void* pMapView);
 	void show();
