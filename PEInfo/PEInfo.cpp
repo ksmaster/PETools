@@ -314,7 +314,7 @@ bool CPEInfo::LoadPE(const char* pFileName) {
        }
     #elif __linux__
        m_fd = open(pFileName, O_RDONLY);
-       qDebug() << "linux open file: [" << pFileName << "], fd=" << m_fd ;
+       qDebug() << "linux open file: [" << pFileName << "], fd=" << m_fd << ", filename length: " << strlen(pFileName) ;
        if(-1 == m_fd) {
            return false;
        }
