@@ -2,6 +2,7 @@
 #include <iostream>
 #include<iomanip>
 #include<cassert>
+#include <QDebug>
 using namespace std;
 
 DWORD ALIGN(DWORD x, DWORD a)  {
@@ -307,6 +308,7 @@ bool CPEInfo::LoadPE(LPCTSTR pFileName) {
        }
     #elif __linux__
        m_fd = open(pFileName, O_RDONLY);
+       qDebug() << "linux open file: " << pFileName << ", fd=" << m_fd ;
        if(-1 == m_fd) {
            return false;
        }
