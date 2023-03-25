@@ -19,7 +19,7 @@
     #define VOID void
     typedef char CHAR;
     typedef short SHORT;
-    typedef long LONG;
+    typedef unsigned int LONG;
     typedef wchar_t WCHAR;
     #endif
     typedef unsigned char       BYTE;

@@ -338,11 +338,11 @@ bool CPEInfo::readPEInfoFromMapView(void* pMapViewBase) {
 		return false;
 	}
 	memcpy(&m_dosHeader, pMapViewBase, sizeof(m_dosHeader));
-
+    qDebug() << "m_dosHeader.e_magic: " << hex << m_dosHeader.e_magic << "sizeof(m_dosHeader): " << sizeof(m_dosHeader);
 	valid_magic(reinterpret_cast<unsigned char*>(&m_dosHeader.e_magic));
 
 	//PE Header
-
+    qDebug() << "m_dosHeader.e_lfanew: " << hex << m_dosHeader.e_lfanew << "sizeof(m_peHeader.x86): " << sizeof(m_peHeader.x86);
 	memcpy(&m_peHeader.x86, reinterpret_cast<unsigned char*>(pMapViewBase) + m_dosHeader.e_lfanew, sizeof(m_peHeader.x86));
 	valid_signature(reinterpret_cast<unsigned char*>(&m_peHeader.x86.Signature));
 	if (m_peHeader.x86.OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {  //0x10b
