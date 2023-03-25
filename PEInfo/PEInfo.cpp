@@ -307,8 +307,10 @@ bool CPEInfo::LoadPE(LPCTSTR pFileName) {
            m_pMapViewBase = ::MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
        }
     #elif __linux__
-       m_fd = open(pFileName, O_RDONLY);
-       qDebug() << "linux open file: " << pFileName << ", fd=" << m_fd ;
+       ByteArray utf8 = str.toUtf8();
+       const char *pzFileName = utf8.constData();
+       m_fd = open(pzFileName, O_RDONLY);
+       qDebug() << "linux open file: " << pzFileName << ", fd=" << m_fd ;
        if(-1 == m_fd) {
            return false;
        }
