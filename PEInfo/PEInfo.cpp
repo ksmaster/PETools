@@ -285,9 +285,15 @@ void CPEInfo::CloseMapViewAndFiles() {
     m_bLoaded = false;
 }
 
-
+#if defined(WIN32)
 bool CPEInfo::LoadPE(LPCTSTR pFileName) {
+#elif __linux__
+bool CPEInfo::LoadPE(const char* pFileName) {
+#endif
     CloseMapViewAndFiles();
+    if(!pFileName) {
+        return false;
+    }
     #if defined(WIN32)
         m_hFile = CreateFile(pFileName, GENERIC_READ,
            FILE_SHARE_READ,
@@ -307,10 +313,8 @@ bool CPEInfo::LoadPE(LPCTSTR pFileName) {
            m_pMapViewBase = ::MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
        }
     #elif __linux__
-       ByteArray utf8 = str.toUtf8();
-       const char *pzFileName = utf8.constData();
-       m_fd = open(pzFileName, O_RDONLY);
-       qDebug() << "linux open file: " << pzFileName << ", fd=" << m_fd ;
+       m_fd = open(pFileName, O_RDONLY);
+       qDebug() << "linux open file: " << pFileName << ", fd=" << m_fd ;
        if(-1 == m_fd) {
            return false;
        }

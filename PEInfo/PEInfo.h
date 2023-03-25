@@ -118,6 +118,11 @@ public:
 	CPEInfo();
 	~CPEInfo();
     void CloseMapViewAndFiles();
+#if defined(WIN32)
+    bool LoadPE(LPCTSTR pFileName);
+#elif __linux__
+    bool LoadPE(const char* pFileName);
+#endif
 	bool LoadPE(LPCTSTR pFileName);
     bool loaded() {return m_bLoaded;}
     bool readPEInfoFromMapView(void* pMapView);
