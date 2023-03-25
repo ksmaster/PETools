@@ -322,6 +322,7 @@ bool CPEInfo::LoadPE(const char* pFileName) {
        fstat(m_fd, &sb);
        m_dwFileSize = sb.st_size;
        m_pMapViewBase = mmap(NULL, m_dwFileSize, PROT_READ, MAP_PRIVATE, m_fd, 0);
+       qDebug << "m_pMapViewBase: " << m_pMapViewBase;
     #endif
        if (m_pMapViewBase) {
            m_bLoaded = readPEInfoFromMapView(m_pMapViewBase);
