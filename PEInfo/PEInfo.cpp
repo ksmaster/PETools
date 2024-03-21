@@ -135,7 +135,7 @@ void CPEInfo::show() {
 	printImgSecHeader();
 }
 
-DWORD CPEInfo::getCoffHeaderSize() {
+DWORD CPEInfo::getCoffHeaderSize() const {
     DWORD dwCoffHeaderRealSize = m_dosHeader.e_lfanew + m_dwSizeofImageNTHeaders + m_peHeader.x86.FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER);
     DWORD dwFileAlignment = m_bX86 ? m_peHeader.x86.OptionalHeader.FileAlignment : m_peHeader.x64.OptionalHeader.FileAlignment;
     return ALIGN(dwCoffHeaderRealSize, dwFileAlignment);
@@ -409,7 +409,7 @@ void CPEInfo::printImgSecHeader() {
 }
 
 
-DWORD CPEInfo::rvaToFoa(DWORD rva) {
+DWORD CPEInfo::rvaToFoa(DWORD rva) const {
 	for (const auto &imgSecHeader : m_vecImgSecHeader) {
 		if (rva >= imgSecHeader.VirtualAddress && rva <= (imgSecHeader.VirtualAddress + imgSecHeader.SizeOfRawData)) {
 			return imgSecHeader.PointerToRawData + (rva - imgSecHeader.VirtualAddress);
@@ -418,14 +418,14 @@ DWORD CPEInfo::rvaToFoa(DWORD rva) {
     return rva ? -1: 0;
 }
 
-DWORD CPEInfo::foaToRva(DWORD foa) {
+DWORD CPEInfo::foaToRva(DWORD foa) const {
 	for (const auto &imgSecHeader : m_vecImgSecHeader) {
 		if (foa >= imgSecHeader.PointerToRawData && foa < (imgSecHeader.PointerToRawData + imgSecHeader.SizeOfRawData)) {
 			DWORD rva = imgSecHeader.VirtualAddress + (foa - imgSecHeader.PointerToRawData);
 			return rva;
 		}
 	}
-	return 0;
+    return foa ? -1: 0;
 }
 
 
@@ -465,18 +465,18 @@ void CPEInfo::loadFirstThunkDetail(DWORD firstThunk) {
 	m_mapImportIAT[firstThunk] = vecIAT;
 }
 
-IMAGE_DATA_DIRECTORY * CPEInfo::getDataDirectory(DWORD index) {
+const IMAGE_DATA_DIRECTORY * CPEInfo::getDataDirectory(DWORD index) const {
 	if (index >= IMAGE_NUMBEROF_DIRECTORY_ENTRIES) {
 		return nullptr;
 	}
 	IMAGE_DATA_DIRECTORY * pDataDirectory = nullptr;
 	if (m_peHeader.x86.OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {  //0x10b
-		pDataDirectory = &m_peHeader.x86.OptionalHeader.DataDirectory[index];
+		return &m_peHeader.x86.OptionalHeader.DataDirectory[index];
 	}
 	else if (m_peHeader.x86.OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {  //0x20b
-		pDataDirectory = &m_peHeader.x64.OptionalHeader.DataDirectory[index];
+		return &m_peHeader.x64.OptionalHeader.DataDirectory[index];
 	}
-	return pDataDirectory;
+	return nullptr;
 }
 
 inline string CPEInfo::getStrFromRva(DWORD dwRva) {
@@ -526,7 +526,7 @@ void CPEInfo::getWORDVecFromStartRva(DWORD dwRva, std::vector<WORD> &vecDwValue,
 
 //
 void CPEInfo::loadImportDataDirectory() {
-	IMAGE_DATA_DIRECTORY * pImportDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT);
+	const IMAGE_DATA_DIRECTORY * pImportDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT);
 	if (!pImportDataDirectory) {
 		return;
 	}
@@ -560,21 +560,21 @@ void CPEInfo::loadImportDataDirectory() {
 
 
 void CPEInfo::loadIATDataDirectory() {
-	IMAGE_DATA_DIRECTORY * pIATDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_IAT);
+	const IMAGE_DATA_DIRECTORY * pIATDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_IAT);
 	if (!pIATDataDirectory) {
 		return;
 	}
 	DWORD iatDataDirFoa = rvaToFoa(pIATDataDirectory->VirtualAddress);
 	printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + iatDataDirFoa, pIATDataDirectory->Size);
 }
-
+ 
 
 void CPEInfo::loadEATDataDirectory() {
-	IMAGE_DATA_DIRECTORY * pEATDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
+	const IMAGE_DATA_DIRECTORY * pEATDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
 	if (!pEATDataDirectory) {
 		return;
 	}
-
+	
 	if (pEATDataDirectory->VirtualAddress) {
 		DWORD eatDataDirFoa = rvaToFoa(pEATDataDirectory->VirtualAddress);
 		if (eatDataDirFoa) {

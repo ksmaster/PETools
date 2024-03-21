@@ -1,0 +1,45 @@
+QWidget#PEMainWindow
+{
+	background: white;
+}
+
+
+QWidget#menubar
+{
+	background: transparent;
+}
+
+QLabel#lblPEPath
+{
+	background: transparent;
+	padding-left: 5;
+}
+
+QWidget#tabPEHeader
+{
+	background: transparent;
+}
+
+
+QWidget#dataDirectory
+{
+	background: transparent;
+	border: 0;
+}
+
+QLabel#peHeaderLbl {
+	background: transparent;
+}
+
+
+QLabel#dataDirectory {
+	padding-right: 10;
+	background: transparent;
+	qproperty-alignment: 'AlignVCenter | AlignRight';
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 20px;
+}
+QWidget#dosLeftWidget {
+	background: transparent;
+}

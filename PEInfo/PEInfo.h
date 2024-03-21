@@ -130,54 +130,54 @@ public:
 	void loadIATDataDirectory();
 	void loadEATDataDirectory();
     void testGetFuncByName(const std::string &strFuncName);
-	DWORD rvaToFoa(DWORD rva);
-	DWORD foaToRva(DWORD foa);
-    DWORD getCoffHeaderSize();
+	DWORD rvaToFoa(DWORD rva) const;
+	DWORD foaToRva(DWORD foa) const;
+    DWORD getCoffHeaderSize() const;
 	union {
 		IMAGE_NT_HEADERS32 x86;
 		IMAGE_NT_HEADERS64 x64;
 	} m_peHeader;
-    DWORD getEntryPointRVA() {
+    DWORD getEntryPointRVA() const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.AddressOfEntryPoint : m_peHeader.x64.OptionalHeader.AddressOfEntryPoint;
     }
-    DWORD getImageBaseX86() {
+    DWORD getImageBaseX86() const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.ImageBase : 0;
     }
-    ULONGLONG getImageBaseX64() {
+    ULONGLONG getImageBaseX64() const {
         return  m_bX86 ? 0 : m_peHeader.x64.OptionalHeader.ImageBase;
     }
-    DWORD getSizeOfImage() {
+    DWORD getSizeOfImage()const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.SizeOfImage : m_peHeader.x64.OptionalHeader.SizeOfImage;
     }
-    DWORD getSectionAlignment() {
+    DWORD getSectionAlignment() const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.SectionAlignment : m_peHeader.x64.OptionalHeader.SectionAlignment;
     }
-    DWORD getFileAlignment() {
+    DWORD getFileAlignment() const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.FileAlignment : m_peHeader.x64.OptionalHeader.FileAlignment;
     }
-    WORD getNumberOfSections() {
+    WORD getNumberOfSections() const {
         return m_bX86 ? m_peHeader.x86.FileHeader.NumberOfSections : m_peHeader.x64.FileHeader.NumberOfSections;
     }
-    WORD getCharacteristics() {
+    WORD getCharacteristics() const {
         return m_bX86 ? m_peHeader.x86.FileHeader.Characteristics : m_peHeader.x64.FileHeader.Characteristics;
     }
-    DWORD getCheckSum() {
+    DWORD getCheckSum() const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.CheckSum : m_peHeader.x64.OptionalHeader.CheckSum;
     }
-    WORD getMachine() {
+    WORD getMachine()const {
         return m_bX86 ? m_peHeader.x86.FileHeader.Machine : m_peHeader.x64.FileHeader.Machine;
     }
-    WORD getSubSystem() {
+    WORD getSubSystem() const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.Subsystem : m_peHeader.x64.OptionalHeader.Subsystem;
     }
-    WORD getDllCharacteristics() {
+    WORD getDllCharacteristics()const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.DllCharacteristics : m_peHeader.x64.OptionalHeader.DllCharacteristics;
     }
-    DWORD getDataDirectoryElemCnt() {
+    DWORD getDataDirectoryElemCnt()const {
         return m_bX86 ? m_peHeader.x86.OptionalHeader.NumberOfRvaAndSizes : m_peHeader.x64.OptionalHeader.NumberOfRvaAndSizes;
     }
-    IMAGE_DATA_DIRECTORY * getDataDirectory(DWORD index);
-
+    const IMAGE_DATA_DIRECTORY * getDataDirectory(DWORD index) const;
+    IMAGE_DOS_HEADER getImageDosHeader() { return m_dosHeader;   }
 private:
 	void printPEHeaderX86();
 	void printPEHeaderX64();

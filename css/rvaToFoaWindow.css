@@ -1,0 +1,21 @@
+QWidget#rvaToFoa {
+	background: white;
+	border: 0;
+}
+
+
+
+QRadioButton {
+	padding-left: 10;
+	background: transparent;
+}
+
+HexLineEdit#hexLineEdit {
+	background: transparent;
+}
+
+QLabel#rvaLbl {
+	padding-left: 25;
+	background: transparent;
+}
+

@@ -1,13 +1,17 @@
 #include <memory>
 #include <QApplication>
-#include "pewindow.h"
+#include <QTranslator>
+//#include "pewindow.h"
+#include "PEMainWindow.h"
 #include "globaldata.h"
 
 
 int main(int argc, char *argv[])
 {
+
     QApplication a(argc, argv);
-    PEWindow w;
+   
+    PEMainWindow w;
     w.show();
     return a.exec();
 }
