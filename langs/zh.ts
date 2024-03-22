@@ -21,77 +21,77 @@
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="70"/>
         <source>Export</source>
-        <translation type="unfinished">导出表</translation>
+        <translation>导出表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="71"/>
         <source>Import</source>
-        <translation type="unfinished">导入表</translation>
+        <translation>导入表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="72"/>
         <source>Resource</source>
-        <translation type="unfinished">资源表</translation>
+        <translation>资源表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="73"/>
         <source>Exception</source>
-        <translation type="unfinished">异常表</translation>
+        <translation>异常表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="74"/>
         <source>Security</source>
-        <translation type="unfinished">安全表</translation>
+        <translation>安全表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="75"/>
         <source>BaseRelocation</source>
-        <translation type="unfinished">重定位表</translation>
+        <translation>重定位表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="76"/>
         <source>Debug</source>
-        <translation type="unfinished">调式符号表</translation>
+        <translation>调式符号表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="77"/>
         <source>CopyrightOrArchitecture</source>
-        <translation type="unfinished">版权或架构表</translation>
+        <translation>版权或架构表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="78"/>
         <source>Globalptr</source>
-        <translation type="unfinished">全局指针表</translation>
+        <translation>全局指针表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="79"/>
         <source>Tls</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="80"/>
         <source>LoadCfg</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="81"/>
         <source>BoundImport</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="82"/>
         <source>IAT</source>
-        <translation type="unfinished">导入地址表</translation>
+        <translation>导入地址表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="83"/>
         <source>DelayImport</source>
-        <translation type="unfinished">延迟导入表</translation>
+        <translation>延迟导入表</translation>
     </message>
     <message>
         <location filename="../GUI/dataDirectoryWidget.cpp" line="84"/>
         <source>ComDescriptor</source>
-        <translation type="unfinished">Com描述符表</translation>
+        <translation>Com描述符表</translation>
     </message>
 </context>
 <context>
@@ -176,22 +176,22 @@
     <message>
         <location filename="../GUI/dosWidget.cpp" line="85"/>
         <source>Size Of Header</source>
-        <translation type="unfinished"></translation>
+        <translation>Dos头大小</translation>
     </message>
     <message>
         <location filename="../GUI/dosWidget.cpp" line="87"/>
         <source>Entry Point</source>
-        <translation type="unfinished"></translation>
+        <translation>入口点</translation>
     </message>
     <message>
         <location filename="../GUI/dosWidget.cpp" line="89"/>
         <source>Relocation</source>
-        <translation type="unfinished"></translation>
+        <translation>重定位地址</translation>
     </message>
     <message>
         <location filename="../GUI/dosWidget.cpp" line="90"/>
         <source>Relocation File address</source>
-        <translation type="unfinished"></translation>
+        <translation>重定位文件地址</translation>
     </message>
 </context>
 <context>
@@ -199,67 +199,67 @@
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="211"/>
         <source>EntryPoint(RVA)</source>
-        <translation type="unfinished">入口地址（相对虚拟地址）</translation>
+        <translation>入口地址（相对虚拟地址）</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="212"/>
         <source>EntryPoint(RAW)</source>
-        <translation type="unfinished">入口地址（文件偏移地址）</translation>
+        <translation>入口地址（文件偏移地址）</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="210"/>
         <source>ImageBase</source>
-        <translation type="unfinished">镜像基址</translation>
+        <translation>镜像基址</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="217"/>
         <source>SizeOfImage</source>
-        <translation type="unfinished">镜像大小</translation>
+        <translation>镜像大小</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="218"/>
         <source>SectionAlignment</source>
-        <translation type="unfinished">节对齐粒度</translation>
+        <translation>节对齐粒度</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="219"/>
         <source>FileAlignment</source>
-        <translation type="unfinished">文件对齐粒度</translation>
+        <translation>文件对齐粒度</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="220"/>
         <source>NumberOfSections</source>
-        <translation type="unfinished">分节数</translation>
+        <translation>分节数</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="214"/>
         <source>Characteristics</source>
-        <translation type="unfinished">特征</translation>
+        <translation>特征</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="221"/>
         <source>SizeOfHeaders</source>
-        <translation type="unfinished">头大小</translation>
+        <translation>头大小</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="222"/>
         <source>CheckSum</source>
-        <translation type="unfinished">校验和</translation>
+        <translation>校验和</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="216"/>
         <source>Machine</source>
-        <translation type="unfinished">机器</translation>
+        <translation>机器</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="215"/>
         <source>SubSystem</source>
-        <translation type="unfinished">子系统</translation>
+        <translation>子系统</translation>
     </message>
     <message>
         <location filename="../GUI/PEHeaderItemListWidget.cpp" line="213"/>
         <source>DllCharacteristics</source>
-        <translation type="unfinished">Dll特征</translation>
+        <translation>Dll特征</translation>
     </message>
 </context>
 <context>
@@ -445,12 +445,12 @@
     <message>
         <location filename="../GUI/rvatofoawindow.cpp" line="96"/>
         <source>RVA</source>
-        <translation type="unfinished">相对虚拟地址</translation>
+        <translation>相对虚拟地址</translation>
     </message>
     <message>
         <location filename="../GUI/rvatofoawindow.cpp" line="96"/>
         <source>RAW</source>
-        <translation type="unfinished">文件偏移地址</translation>
+        <translation>文件偏移地址</translation>
     </message>
     <message>
         <source>FOA</source>
