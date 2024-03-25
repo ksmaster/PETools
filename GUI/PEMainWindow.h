@@ -31,6 +31,7 @@ class QTableView;
 class PEHeaderItemListWidget;
 class DataDirectoryWidget;
 class DosWidget;
+class sectionTable;
 
 
 
@@ -60,8 +61,10 @@ private:
     QWidget* m_statusbar;
     QTabWidget* m_tabWidget = nullptr;
     QLabel* m_lblDataDirectory;
+    sectionTable* m_secTbl;
     QTranslator *m_translator;
     bool m_bTranslator = false;
+    int m_nTabSectionHeader = -1;
 private:
     QMenu* m_pPEInfoMenu;
     QMenu* m_pHelpMenu;

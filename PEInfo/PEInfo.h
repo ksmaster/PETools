@@ -178,6 +178,7 @@ public:
     }
     const IMAGE_DATA_DIRECTORY * getDataDirectory(DWORD index) const;
     IMAGE_DOS_HEADER getImageDosHeader() { return m_dosHeader;   }
+    const std::vector<IMAGE_SECTION_HEADER>& getImageSectionHeaders() { return m_vecImgSecHeader; }
 private:
 	void printPEHeaderX86();
 	void printPEHeaderX64();

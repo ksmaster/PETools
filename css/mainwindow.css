@@ -43,3 +43,17 @@ QLabel#dataDirectory {
 QWidget#dosLeftWidget {
 	background: transparent;
 }
+
+/*
+QPushButton#closeBtn
+{
+	background-image : url(:/icon/Execute);
+	background-origin: content;
+    background-position: right;
+	padding-right: 10px;
+    background-repeat: no-repeat;
+	
+	qproperty-alignment: 'AlignCenter|AlignVCenter';
+}
+*/
+

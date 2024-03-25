@@ -2,7 +2,7 @@
 *.swap
 temp_build
 .vs
-*.py
+
 
 # cppcheck scrips and reports
 *cppcheck*

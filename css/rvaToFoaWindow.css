@@ -7,11 +7,19 @@ QWidget#rvaToFoa {
 
 QRadioButton {
 	padding-left: 10;
-	background: transparent;
 }
 
+QRadioButton::indicator:checked {
+     image: url(:/icon/radio_check);
+}
+
+QRadioButton::indicator:unchecked {
+     image: url(:/icon/radio_uncheck);
+}
+
+
 HexLineEdit#hexLineEdit {
-	background: transparent;
+	/*background: transparent;*/
 }
 
 QLabel#rvaLbl {

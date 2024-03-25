@@ -365,57 +365,62 @@
         <translation type="vanished">Com描述符表</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="178"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="185"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="179"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="186"/>
         <source>Open PE File</source>
         <translation>打开PE文件</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="181"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="188"/>
         <source>Help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="182"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="189"/>
         <source>Switch Language</source>
         <translation>中英文切换</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="183"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="190"/>
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="184"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="191"/>
         <source>RVA</source>
         <translation>相对虚拟地址</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="184"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="191"/>
         <source>RAW</source>
         <translation>文件偏移地址</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="186"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="193"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="187"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="194"/>
         <source>DATA DIRECTORY</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../GUI/PEMainWindow.cpp" line="198"/>
+        <source>Section</source>
+        <translation>分节</translation>
+    </message>
+    <message>
+        <location filename="../GUI/PEMainWindow.cpp" line="212"/>
         <source>Open File</source>
         <translation>打开文件</translation>
     </message>
     <message>
-        <location filename="../GUI/PEMainWindow.cpp" line="198"/>
+        <location filename="../GUI/PEMainWindow.cpp" line="212"/>
         <source>Exe Files (*.exe);;DLL libraries (*.dll)</source>
         <translation></translation>
     </message>
@@ -423,38 +428,76 @@
 <context>
     <name>RvaToFoaWindow</name>
     <message>
-        <location filename="../GUI/rvatofoawindow.cpp" line="92"/>
+        <location filename="../GUI/rvatofoawindow.cpp" line="91"/>
         <source>File Offset</source>
         <translation>文件偏移</translation>
     </message>
     <message>
-        <location filename="../GUI/rvatofoawindow.cpp" line="93"/>
+        <location filename="../GUI/rvatofoawindow.cpp" line="92"/>
         <source>Relative Virtual Address</source>
         <translation>相对虚拟地址</translation>
     </message>
     <message>
-        <location filename="../GUI/rvatofoawindow.cpp" line="94"/>
+        <location filename="../GUI/rvatofoawindow.cpp" line="93"/>
         <source>Virtual Address</source>
         <translation>虚拟地址</translation>
     </message>
     <message>
-        <location filename="../GUI/rvatofoawindow.cpp" line="95"/>
+        <location filename="../GUI/rvatofoawindow.cpp" line="94"/>
         <source>ImageBase</source>
         <translation>镜像基址</translation>
     </message>
     <message>
-        <location filename="../GUI/rvatofoawindow.cpp" line="96"/>
+        <location filename="../GUI/rvatofoawindow.cpp" line="95"/>
         <source>RVA</source>
         <translation>相对虚拟地址</translation>
     </message>
     <message>
-        <location filename="../GUI/rvatofoawindow.cpp" line="96"/>
+        <location filename="../GUI/rvatofoawindow.cpp" line="95"/>
         <source>RAW</source>
         <translation>文件偏移地址</translation>
     </message>
     <message>
         <source>FOA</source>
         <translation type="obsolete">文件偏移</translation>
+    </message>
+</context>
+<context>
+    <name>sectionTable</name>
+    <message>
+        <location filename="../GUI/sectionTable.cpp" line="26"/>
+        <source>Index</source>
+        <translation>编号</translation>
+    </message>
+    <message>
+        <location filename="../GUI/sectionTable.cpp" line="26"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../GUI/sectionTable.cpp" line="27"/>
+        <source>Virtual Offset</source>
+        <translation>虚拟地址偏移</translation>
+    </message>
+    <message>
+        <location filename="../GUI/sectionTable.cpp" line="27"/>
+        <source>Virtual Size</source>
+        <translation>虚拟分节大小</translation>
+    </message>
+    <message>
+        <location filename="../GUI/sectionTable.cpp" line="28"/>
+        <source>RAW Offset</source>
+        <translation>文件偏移</translation>
+    </message>
+    <message>
+        <location filename="../GUI/sectionTable.cpp" line="28"/>
+        <source>RAW Size</source>
+        <translation>文件偏移大小</translation>
+    </message>
+    <message>
+        <location filename="../GUI/sectionTable.cpp" line="28"/>
+        <source>Characteristics</source>
+        <translation>特征</translation>
     </message>
 </context>
 </TS>

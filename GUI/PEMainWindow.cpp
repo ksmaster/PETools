@@ -14,6 +14,7 @@
 #include "dataDirectoryWidget.h"
 #include "PEHeaderItemListWidget.h"
 #include "dosWidget.h"
+#include "sectionTable.h"
 
 #include "Util.h"
 
@@ -22,6 +23,7 @@
 
 PEMainWindow::PEMainWindow(QWidget* parent) :BaseWindow(parent), m_gd(this)
 {
+   
     m_translator = new QTranslator();
     initUI();
     
@@ -34,10 +36,9 @@ PEMainWindow::PEMainWindow(QWidget* parent) :BaseWindow(parent), m_gd(this)
     qDebug() << "PEMainWindow: " << ", ThreadID: " << QThread::currentThreadId();
 }
 
-
+ 
 void PEMainWindow::initUI()
 {
-    setWindowIcon(QIcon(":/icon/pe"));
     setAcceptDrops(true);
     setFixedSize(800, 600);
     setAcceptDrops(true);
@@ -94,6 +95,9 @@ void PEMainWindow::initUI()
     m_dosWidget->setObjectName("Dos");
     m_tabWidget->addTab(m_dosWidget, QString("Dos"));
 
+    m_secTbl = new sectionTable(m_tabWidget);
+    m_nTabSectionHeader = m_tabWidget->addTab(m_secTbl, "");
+
 
     int nStatusBarHeight = 30;
     m_statusbar = new QWidget(this);
@@ -110,6 +114,7 @@ void PEMainWindow::initUI()
     pStatusBarLayout->addWidget(m_btnRVATrans);
     pStatusBarLayout->addStretch();
     m_btnClose = new QPushButton("", this);
+    m_btnClose->setObjectName("closeBtn");
     m_btnClose->setFixedWidth(60);
     connect(m_btnClose, &QPushButton::clicked, this, &PEMainWindow::OnClose);
     pStatusBarLayout->addWidget(m_btnClose);
@@ -140,6 +145,8 @@ void PEMainWindow::onShowPEInfo() {
 
     //show  DOS Header
     m_dosWidget->updateData(peInfo.getImageDosHeader());
+
+    m_secTbl->reloadSections(peInfo.getImageSectionHeaders());
 }
 
 void PEMainWindow::OnShowRVAToRAWWindow() {
@@ -187,7 +194,14 @@ void PEMainWindow::retranslateUi()
     m_lblDataDirectory->setText(tr("DATA DIRECTORY"));
     m_itemListWidget->updatePEHeaderItemLbls();
     updateDataDirectory();
-    
+
+    m_tabWidget->setTabText(m_nTabSectionHeader, tr("Section"));
+    CPEInfo& peInfo = m_gd.GetPEInfo();
+    if (!peInfo.loaded())
+    {
+        return;
+    }
+    m_secTbl->reloadSections(peInfo.getImageSectionHeaders());
 }
 
 

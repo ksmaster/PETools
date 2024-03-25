@@ -20,9 +20,10 @@ class DataDirectoryWidget : public QTableView
 public:
     explicit DataDirectoryWidget(QWidget *parent = nullptr);
     ~DataDirectoryWidget();
+    void reloadAllData(const CPEInfo& peInfo);
+private:
     void setHeader();
     void addDataDirectory(const QString& strName, const CPEInfo& peInfo, const IMAGE_DATA_DIRECTORY&);
-    void reloadAllData(const CPEInfo& peInfo);
 private:
     QStandardItemModel* m_model;
 private:

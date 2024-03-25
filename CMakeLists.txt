@@ -52,6 +52,7 @@ set (GUI_CPP_FILES
     GUI/rvatofoawindow.cpp
     GUI/dataDirectoryWidget.cpp
     GUI/PEHeaderItemListWidget.cpp
+    GUI/sectionTable.cpp
     
 )
 
@@ -64,6 +65,8 @@ set (GUI_HEADER_FILES
     GUI/rvatofoawindow.h
     GUI/dataDirectoryWidget.h
     GUI/PEHeaderItemListWidget.h
+    GUI/sectionTable.h
+    
     
 )
 

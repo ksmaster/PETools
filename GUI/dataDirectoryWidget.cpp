@@ -8,7 +8,7 @@
 
 
 
-DataDirectoryWidget::DataDirectoryWidget(QWidget *parent):    QTableView(parent)
+DataDirectoryWidget::DataDirectoryWidget(QWidget *parent): QTableView(parent)
 {
     m_model = new QStandardItemModel();
     this->setModel(m_model);

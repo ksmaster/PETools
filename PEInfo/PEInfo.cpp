@@ -245,17 +245,15 @@ void CPEInfo::printPEHeaderX64() {
 	printField("OptionalHeader.DataDirectory.Import", (const unsigned char *)&m_peHeader.x64.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT], sizeof(IMAGE_DATA_DIRECTORY));
 }
 
-CPEInfo::CPEInfo():m_sectionNum(0),m_dwSizeofImageNTHeaders(0),
-    m_bLoaded(false),
-    m_pMapViewBase(nullptr),
+CPEInfo::CPEInfo():m_sectionNum(0),m_dwSizeofImageNTHeaders(0),    m_bLoaded(false),    m_pMapViewBase(nullptr),
     #ifdef WIN32
     m_hFile(INVALID_HANDLE_VALUE),
     #elif __linux__
     m_fd(-1),
     #endif
-    m_dwFileSize(0),
-    m_bX86(true){
-
+    m_dwFileSize(0),    m_bX86(true)
+{
+	m_vecImgSecHeader.reserve(20);
 }
 
 CPEInfo::~CPEInfo() {
@@ -390,7 +388,7 @@ bool CPEInfo::readPEInfoFromMapView(void* pMapViewBase) {
 	//print_pe_field("OptionalHeader.DataDirectory.After", reinterpret_cast<unsigned char*>(pMapView) + dos_header.e_lfanew, 1024);
 
     IMAGE_SECTION_HEADER  * pImageSecHeader = reinterpret_cast<IMAGE_SECTION_HEADER  *>(reinterpret_cast<unsigned char*>(pMapViewBase) + m_dosHeader.e_lfanew + m_dwSizeofImageNTHeaders);
-
+	m_vecImgSecHeader.clear();
 	//print_pe_field("Sections", (const unsigned char *)p_image_sec_header, 1024);
 	for (auto sectionIdx = 0; sectionIdx < m_sectionNum; ++sectionIdx) {
 		m_vecImgSecHeader.emplace_back(*pImageSecHeader);

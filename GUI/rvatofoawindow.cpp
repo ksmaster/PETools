@@ -10,7 +10,6 @@ RvaToFoaWindow::RvaToFoaWindow(CPEInfo &peInfo,QWidget *parent) :
 {
     setObjectName("rvaToFoa");
     setFixedSize(493, 300);
-    setWindowIcon(QIcon(":/icon/pe"));
     setAttribute(Qt::WA_DeleteOnClose);
     setModal(true);
     setWindowFlags(windowFlags() & (~Qt::WindowContextHelpButtonHint));

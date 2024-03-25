@@ -1,6 +1,15 @@
 <RCC>
     <qresource prefix="/icon">
-        <file alias="pe">icon/pe.ico</file>
+        <file alias="pe">icon/pe.png</file>
+        <file alias="radio_check">icon/radio_check.png</file>
+        <file alias="radio_uncheck">icon/radio_uncheck.png</file>
+        <file alias="Read">icon/Read.png</file>
+        <file alias="Write">icon/Write.png</file>
+        <file alias="Execute">icon/X.png</file>
+        <file alias="RW">icon/RW.png</file>
+        <file alias="RWX">icon/RWX.png</file>
+        <file alias="RX">icon/RX.png</file>
+        <file alias="WX">icon/WX.png</file>
     </qresource>
     <qresource prefix="/css">
         <file alias="mainwindow">css/mainwindow.css</file>
