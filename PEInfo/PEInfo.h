@@ -43,6 +43,14 @@ class IMAGE_EXPORT_INFO_WRAPPER {
 public:
 	IMAGE_EXPORT_DIRECTORY m_imgExportDirectory;
 	std::string m_strDllName;
+    std::vector<std::string> m_vecFuncName;
+    std::vector<DWORD> m_vecFuncAddr;
+    std::vector<WORD> m_vecFuncNameOrdinal;
+    bool m_bLoaded=false;
+    void init()
+    {
+        m_bLoaded = false;
+    }
 	void  SetImgExportInfoWrapper(const IMAGE_EXPORT_DIRECTORY &imgExportDirectory, const std::string &dllName, 
 		 const std::vector<std::string> &vecFuncName,
 		 const std::vector<DWORD> &vecFuncAddr,
@@ -53,6 +61,7 @@ public:
 		m_vecFuncName = vecFuncName;
 		m_vecFuncAddr = vecFuncAddr;
 		m_vecFuncNameOrdinal = vecFuncNameOrdinal;
+        m_bLoaded = true;
 	}
 	void showInfo() {
 		std::cout << "strDllName: [" << m_strDllName << "]" << std::endl;
@@ -69,9 +78,9 @@ public:
             std::cout << std::hex << std::setfill('0') << std::setw(8) << funcAddr <<  std::endl;
         }
 	}
-    DWORD getFuncByName(const std::string &strFuncName) {
+    bool getFuncByName(const std::string &strFuncName, WORD &wFuncNameOrdinal, DWORD &dwFuncAddr) const {
         if (m_imgExportDirectory.NumberOfNames == 0) {
-            return 0;
+            return false;
         }
         DWORD nameIdx = 0;
         for (; nameIdx < m_vecFuncName.size(); ++nameIdx) {
@@ -80,35 +89,31 @@ public:
             }
         }
         if (nameIdx >= m_vecFuncName.size()) {
-            return 0;
+            return false;
         }
         if (nameIdx >= m_vecFuncNameOrdinal.size()) {
-            return 0;
+            return false;
         }
-        WORD dwFuncNameOrdinal = m_vecFuncNameOrdinal[nameIdx];
-        std::cout << "nameIdx = " << std::hex << std::setfill('0') << std::setw(8) << nameIdx << std::endl;
-        std::cout << "dwFuncNameOrdinal = " << std::hex << std::setfill('0') << std::setw(8) << dwFuncNameOrdinal << std::endl;
-        if (dwFuncNameOrdinal >= m_vecFuncAddr.size()) {
-            if (dwFuncNameOrdinal >= m_imgExportDirectory.Base) {
-                DWORD dwFuncAddr = dwFuncNameOrdinal - m_imgExportDirectory.Base;
-                std::cout << "index = dwFuncNameOrdinal - Base = " << std::hex << std::setfill('0') << std::setw(8) << dwFuncAddr << std::endl;
-                if (dwFuncAddr >= m_vecFuncAddr.size()) {
-                    return 0;
+        wFuncNameOrdinal = m_vecFuncNameOrdinal[nameIdx];
+        //std::cout << "nameIdx = " << std::hex << std::setfill('0') << std::setw(8) << nameIdx << std::endl;
+        //std::cout << "dwFuncNameOrdinal = " << std::hex << std::setfill('0') << std::setw(8) << wFuncNameOrdinal << std::endl;
+        if (wFuncNameOrdinal >= m_vecFuncAddr.size()) {
+            if (wFuncNameOrdinal >= m_imgExportDirectory.Base) {
+                DWORD dwFuncAddrIdx = wFuncNameOrdinal - m_imgExportDirectory.Base;
+                std::cout << "index = dwFuncNameOrdinal - Base = " << std::hex << std::setfill('0') << std::setw(8) << dwFuncAddrIdx << std::endl;
+                if (dwFuncAddrIdx >= m_vecFuncAddr.size()) {
+                    return false;
                 }
-                return m_vecFuncAddr[dwFuncAddr];
+                dwFuncAddr = m_vecFuncAddr[dwFuncAddrIdx];
+                return true;
             }
-            else {
-                return 0;
-            }
+            return false;
         }
         else {            
-            return m_vecFuncAddr[dwFuncNameOrdinal];
+            dwFuncAddr = m_vecFuncAddr[wFuncNameOrdinal];
+            return true;
         } 
     }
-private:
-	std::vector<std::string> m_vecFuncName;
-	std::vector<DWORD> m_vecFuncAddr;
-	std::vector<WORD> m_vecFuncNameOrdinal;
 };
 
 
@@ -179,6 +184,7 @@ public:
     const IMAGE_DATA_DIRECTORY * getDataDirectory(DWORD index) const;
     IMAGE_DOS_HEADER getImageDosHeader() { return m_dosHeader;   }
     const std::vector<IMAGE_SECTION_HEADER>& getImageSectionHeaders() { return m_vecImgSecHeader; }
+    IMAGE_EXPORT_INFO_WRAPPER& getImageExportInfo() { return m_imgExportInfoWrapper; }
 private:
 	void printPEHeaderX86();
 	void printPEHeaderX64();

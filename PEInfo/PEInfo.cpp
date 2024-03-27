@@ -288,6 +288,7 @@ bool CPEInfo::LoadPE(LPCTSTR pFileName) {
 #elif __linux__
 bool CPEInfo::LoadPE(const char* pFileName) {
 #endif
+	m_bLoaded = false;
     CloseMapViewAndFiles();
     if(!pFileName) {
         return false;
@@ -568,6 +569,7 @@ void CPEInfo::loadIATDataDirectory() {
  
 
 void CPEInfo::loadEATDataDirectory() {
+	m_imgExportInfoWrapper.init();
 	const IMAGE_DATA_DIRECTORY * pEATDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
 	if (!pEATDataDirectory) {
 		return;
@@ -576,21 +578,21 @@ void CPEInfo::loadEATDataDirectory() {
 	if (pEATDataDirectory->VirtualAddress) {
 		DWORD eatDataDirFoa = rvaToFoa(pEATDataDirectory->VirtualAddress);
 		if (eatDataDirFoa) {
-			printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + eatDataDirFoa, pEATDataDirectory->Size);
-			cout << "sizeof(IMAGE_EXPORT_DIRECTORY): " << sizeof(IMAGE_EXPORT_DIRECTORY) << ", and pEATDataDirectory->Size: " << pEATDataDirectory->Size << endl;
+			//printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + eatDataDirFoa, pEATDataDirectory->Size);
+			//cout << "sizeof(IMAGE_EXPORT_DIRECTORY): " << sizeof(IMAGE_EXPORT_DIRECTORY) << ", and pEATDataDirectory->Size: " << pEATDataDirectory->Size << endl;
 			IMAGE_EXPORT_DIRECTORY *pImgExportDirectory = reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + eatDataDirFoa);
-			printField("pImgExportDirectory->Characteristics", (const unsigned char *)&pImgExportDirectory->Characteristics, sizeof(pImgExportDirectory->Characteristics));
-			printField("pImgExportDirectory->TimeDateStamp", (const unsigned char *)&pImgExportDirectory->TimeDateStamp, sizeof(pImgExportDirectory->TimeDateStamp));
-			printField("pImgExportDirectory->MajorVersion", (const unsigned char *)&pImgExportDirectory->MajorVersion, sizeof(pImgExportDirectory->MajorVersion));
-			printField("pImgExportDirectory->MinorVersion", (const unsigned char *)&pImgExportDirectory->MinorVersion, sizeof(pImgExportDirectory->MinorVersion));
-			printField("pImgExportDirectory->Name", (const unsigned char *)&pImgExportDirectory->Name, sizeof(pImgExportDirectory->Name));
-			printField("pImgExportDirectory->Base", (const unsigned char *)&pImgExportDirectory->Base, sizeof(pImgExportDirectory->Base));
-			printField("pImgExportDirectory->NumberOfFunctions", (const unsigned char *)&pImgExportDirectory->NumberOfFunctions, sizeof(pImgExportDirectory->NumberOfFunctions));
-			printField("pImgExportDirectory->NumberOfNames", (const unsigned char *)&pImgExportDirectory->NumberOfNames, sizeof(pImgExportDirectory->NumberOfNames));
-			printField("pImgExportDirectory->AddressOfFunctions", (const unsigned char *)&pImgExportDirectory->AddressOfFunctions, sizeof(pImgExportDirectory->AddressOfFunctions));
-			printField("pImgExportDirectory->AddressOfNames", (const unsigned char *)&pImgExportDirectory->AddressOfNames, sizeof(pImgExportDirectory->AddressOfNames));
-			printField("pImgExportDirectory->AddressOfNameOrdinals", (const unsigned char *)&pImgExportDirectory->AddressOfNameOrdinals, sizeof(pImgExportDirectory->AddressOfNameOrdinals));
-			cout << "pImgExportDirectory->Name string: [" << getStrFromRva(pImgExportDirectory->Name) << "]" << endl;
+			//printField("pImgExportDirectory->Characteristics", (const unsigned char *)&pImgExportDirectory->Characteristics, sizeof(pImgExportDirectory->Characteristics));
+			//printField("pImgExportDirectory->TimeDateStamp", (const unsigned char *)&pImgExportDirectory->TimeDateStamp, sizeof(pImgExportDirectory->TimeDateStamp));
+			//printField("pImgExportDirectory->MajorVersion", (const unsigned char *)&pImgExportDirectory->MajorVersion, sizeof(pImgExportDirectory->MajorVersion));
+			//printField("pImgExportDirectory->MinorVersion", (const unsigned char *)&pImgExportDirectory->MinorVersion, sizeof(pImgExportDirectory->MinorVersion));
+			//printField("pImgExportDirectory->Name", (const unsigned char *)&pImgExportDirectory->Name, sizeof(pImgExportDirectory->Name));
+			//printField("pImgExportDirectory->Base", (const unsigned char *)&pImgExportDirectory->Base, sizeof(pImgExportDirectory->Base));
+			//printField("pImgExportDirectory->NumberOfFunctions", (const unsigned char *)&pImgExportDirectory->NumberOfFunctions, sizeof(pImgExportDirectory->NumberOfFunctions));
+			//printField("pImgExportDirectory->NumberOfNames", (const unsigned char *)&pImgExportDirectory->NumberOfNames, sizeof(pImgExportDirectory->NumberOfNames));
+			//printField("pImgExportDirectory->AddressOfFunctions", (const unsigned char *)&pImgExportDirectory->AddressOfFunctions, sizeof(pImgExportDirectory->AddressOfFunctions));
+			//printField("pImgExportDirectory->AddressOfNames", (const unsigned char *)&pImgExportDirectory->AddressOfNames, sizeof(pImgExportDirectory->AddressOfNames));
+			//printField("pImgExportDirectory->AddressOfNameOrdinals", (const unsigned char *)&pImgExportDirectory->AddressOfNameOrdinals, sizeof(pImgExportDirectory->AddressOfNameOrdinals));
+			//cout << "pImgExportDirectory->Name string: [" << getStrFromRva(pImgExportDirectory->Name) << "]" << endl;
 
 			std::vector<DWORD> vecFuncNameAddr;
 			std::vector<std::string> vecFuncName;
@@ -601,21 +603,23 @@ void CPEInfo::loadEATDataDirectory() {
 				for (auto dwFunNameAddr : vecFuncNameAddr) {
 					vecFuncName.emplace_back(getStrFromRva(dwFunNameAddr));
 				}
-			    getWORDVecFromStartRva(pImgExportDirectory->AddressOfNameOrdinals, vecFuncNameOrdinal, pImgExportDirectory->NumberOfNames);
 			}
 
 			if (pImgExportDirectory->NumberOfFunctions) {
+				getWORDVecFromStartRva(pImgExportDirectory->AddressOfNameOrdinals, vecFuncNameOrdinal, pImgExportDirectory->NumberOfFunctions);
 			    getDWORDVecFromStartRva(pImgExportDirectory->AddressOfFunctions, vecFuncAddr, pImgExportDirectory->NumberOfFunctions);
 			}
 			m_imgExportInfoWrapper.SetImgExportInfoWrapper(*pImgExportDirectory, getStrFromRva(pImgExportDirectory->Name), vecFuncName, vecFuncAddr, vecFuncNameOrdinal);
-            m_imgExportInfoWrapper.showInfo();
+            //m_imgExportInfoWrapper.showInfo();
 		}
 	}
 }
 
 void CPEInfo::testGetFuncByName(const std::string &strFuncName) {
-    DWORD dwFuncAddr = m_imgExportInfoWrapper.getFuncByName(strFuncName);
-    if (dwFuncAddr) {
+	WORD wFuncOrder = 0;
+	DWORD dwFuncAddr = 0;
+	bool bRet = m_imgExportInfoWrapper.getFuncByName(strFuncName, wFuncOrder, dwFuncAddr);
+    if (bRet) {
         std::cout << "dwFuncAddr = " << std::hex << std::setfill('0') << std::setw(8) << dwFuncAddr << std::endl;
         DWORD eatDataDirFoa = rvaToFoa(dwFuncAddr);
         printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + eatDataDirFoa, 100);

@@ -10,11 +10,13 @@
 #include <QStatusBar>
 #include <QDropEvent>
 #include <QTranslator>
-
+#include <QFile>
+#include <QFileInfo>
 #include "dataDirectoryWidget.h"
 #include "PEHeaderItemListWidget.h"
 #include "dosWidget.h"
 #include "sectionTable.h"
+#include "exportFunctionWidget.h"
 
 #include "Util.h"
 
@@ -23,7 +25,7 @@
 
 PEMainWindow::PEMainWindow(QWidget* parent) :BaseWindow(parent), m_gd(this)
 {
-   
+    qDebug() << "PEMainWindow thread: " << QThread::currentThread();
     m_translator = new QTranslator();
     initUI();
     
@@ -31,6 +33,7 @@ PEMainWindow::PEMainWindow(QWidget* parent) :BaseWindow(parent), m_gd(this)
     PELoadWorker* peLoadWorker = m_gd.GetPELoadWorker();
     if (peLoadWorker) {
         connect(peLoadWorker, &PELoadWorker::startShowPEInfoOnGUI, this, &PEMainWindow::onShowPEInfo);
+        connect(peLoadWorker, &PELoadWorker::startShowExportTableOnGUI, this, &PEMainWindow::onShowExportTable);
         connect(this, &PEMainWindow::startLoadPEBasic, peLoadWorker, &PELoadWorker::loadPEBasic);
     }
     qDebug() << "PEMainWindow: " << ", ThreadID: " << QThread::currentThreadId();
@@ -98,6 +101,10 @@ void PEMainWindow::initUI()
     m_secTbl = new sectionTable(m_tabWidget);
     m_nTabSectionHeader = m_tabWidget->addTab(m_secTbl, "");
 
+    m_exportFunctionWidget = new ExportFunctionWidget(m_tabWidget);
+    m_nTabExportFunction = m_tabWidget->addTab(m_exportFunctionWidget, "");
+
+
 
     int nStatusBarHeight = 30;
     m_statusbar = new QWidget(this);
@@ -110,13 +117,13 @@ void PEMainWindow::initUI()
     m_btnRVATrans = new QPushButton(this);
     m_btnRVATrans->setFixedWidth(180);
     m_btnRVATrans->setEnabled(false);
-    connect(m_btnRVATrans, &QPushButton::clicked, this, &PEMainWindow::OnShowRVAToRAWWindow);
+    connect(m_btnRVATrans, &QPushButton::clicked, this, &PEMainWindow::onShowRVAToRAWWindow);
     pStatusBarLayout->addWidget(m_btnRVATrans);
     pStatusBarLayout->addStretch();
     m_btnClose = new QPushButton("", this);
     m_btnClose->setObjectName("closeBtn");
     m_btnClose->setFixedWidth(60);
-    connect(m_btnClose, &QPushButton::clicked, this, &PEMainWindow::OnClose);
+    connect(m_btnClose, &QPushButton::clicked, this, &PEMainWindow::onClose);
     pStatusBarLayout->addWidget(m_btnClose);
     
     retranslateUi();
@@ -124,6 +131,36 @@ void PEMainWindow::initUI()
 }
 
 
+
+void PEMainWindow::retranslateUi()
+{
+    m_pPEInfoMenu->setTitle(tr("File"));
+    m_pActionOpenPE->setText(tr("Open PE File"));
+
+    m_pHelpMenu->setTitle(tr("Help"));
+    m_pActionSWitchLanguage->setText(tr("Switch Language"));
+    m_pActionAbout->setText(tr("About"));
+    QString strTrans = tr("RVA") + "<=>" + tr("RAW");
+    m_btnRVATrans->setText(strTrans);
+    m_btnClose->setText(tr("Close"));
+    m_lblDataDirectory->setText(tr("DATA DIRECTORY"));
+    
+    updateDataDirectory();
+
+    m_tabWidget->setTabText(m_nTabSectionHeader, tr("Section"));
+    m_tabWidget->setTabText(m_nTabExportFunction, tr("Export Functions"));
+
+
+    CPEInfo& peInfo = m_gd.GetPEInfo();
+    if (!peInfo.loaded())
+    {
+        return;
+    }
+    m_secTbl->reloadSections(peInfo.getImageSectionHeaders());
+    
+   
+
+}
 
 void PEMainWindow::updateDataDirectory()
 {
@@ -138,25 +175,49 @@ void PEMainWindow::updateDataDirectory()
 
 void PEMainWindow::onShowPEInfo() {
     CPEInfo& peInfo = m_gd.GetPEInfo();
-    m_btnRVATrans->setEnabled(peInfo.loaded());
+    bool bLoaded = peInfo.loaded();
+    m_btnRVATrans->setEnabled(bLoaded);
+    QString strTitle = "PETools";
+    if (bLoaded)
+    {
+        QString strArchInfo = peInfo.getImageBaseX86() ? "32bit" : "64bit";
+        QString strFilePath = m_lblPEPath->text();
+
+        QFile file(strFilePath);
+        QFileInfo fileInfo(file);
+        QString fileName = fileInfo.fileName();
+        strTitle += QString("PETools - [%1] - [%2]").arg(fileName).arg(strArchInfo);
+    }
+    setWindowTitle(strTitle);
+   
     //show PE header
     m_itemListWidget->updateItemsData(peInfo);
     updateDataDirectory();
 
     //show  DOS Header
     m_dosWidget->updateData(peInfo.getImageDosHeader());
-
     m_secTbl->reloadSections(peInfo.getImageSectionHeaders());
 }
 
-void PEMainWindow::OnShowRVAToRAWWindow() {
+
+void PEMainWindow::onShowExportTable()
+{
+    CPEInfo& peInfo = m_gd.GetPEInfo();
+    if (peInfo.loaded())
+    {
+        m_exportFunctionWidget->reloadExportDirectoryInfo(peInfo.getImageExportInfo());
+    }
+    
+}
+
+void PEMainWindow::onShowRVAToRAWWindow() {
     RvaToFoaWindow *rvaToFoaWindow = new RvaToFoaWindow(m_gd.GetPEInfo());
     //rvaToFoaWindow->setWindowFlag(Qt::FramelessWindowHint);
     
     rvaToFoaWindow->onShow();
 }
 
-void PEMainWindow::OnClose()
+void PEMainWindow::onClose()
 {
     close();
 }
@@ -169,7 +230,7 @@ void PEMainWindow::initMenuBar()
     _mainLayout->addWidget(m_menubar);
 
     m_pPEInfoMenu = m_menubar->addMenu("");
-    m_pActionOpenPE = m_pPEInfoMenu->addAction("", this, &PEMainWindow::ShowPEMainWindow);
+    m_pActionOpenPE = m_pPEInfoMenu->addAction("", this, &PEMainWindow::onOpenPE);
     //setText
     m_pHelpMenu = m_menubar->addMenu("");
     m_pActionSWitchLanguage = m_pHelpMenu->addAction("", this, &PEMainWindow::SwitchLanguage);
@@ -180,38 +241,14 @@ void PEMainWindow::initMenuBar()
 
 
 
-void PEMainWindow::retranslateUi()
+
+
+void PEMainWindow::onOpenPE()
 {
-    m_pPEInfoMenu->setTitle(tr("File"));
-    m_pActionOpenPE->setText(tr("Open PE File"));
-
-    m_pHelpMenu->setTitle(tr("Help"));     
-    m_pActionSWitchLanguage->setText(tr("Switch Language"));
-    m_pActionAbout->setText(tr("About"));
-    QString strTrans = tr("RVA") + "<=>" + tr("RAW");
-    m_btnRVATrans->setText(strTrans);
-    m_btnClose->setText(tr("Close"));
-    m_lblDataDirectory->setText(tr("DATA DIRECTORY"));
-    m_itemListWidget->updatePEHeaderItemLbls();
-    updateDataDirectory();
-
-    m_tabWidget->setTabText(m_nTabSectionHeader, tr("Section"));
-    CPEInfo& peInfo = m_gd.GetPEInfo();
-    if (!peInfo.loaded())
-    {
-        return;
-    }
-    m_secTbl->reloadSections(peInfo.getImageSectionHeaders());
-}
-
-
-
-void PEMainWindow::ShowPEMainWindow()
-{
-    qDebug() << "ShowPEMainWindow called";
+    qDebug() << "onOpenPE called";
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "/", tr("Exe Files (*.exe);;DLL libraries (*.dll)"));
     if (fileName.isEmpty()) {
-        qDebug() << "Selected empty file path : ";
+        qDebug() << "Selected empty file path";
         return;
     }
 
@@ -275,6 +312,7 @@ void PEMainWindow::dropEvent(QDropEvent* event)
         QString fileName = url.toLocalFile();
         qDebug() << "Dropped file:" << fileName;
         onStartLoadPE(fileName);
+        return;
     }
 }
 

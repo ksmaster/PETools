@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include "common/qbasiclabel.h"
+#include "constants/constStrings.h"
 #include "Util.h"
 #include "globaldata.h"
 
@@ -79,139 +80,22 @@ void DllCharacteristicsTipWidget::retranslateUi()
 }
 
 
+static const QString STR_DLL_CHARACTERISTICS = "DllCharacteristics";
 
 
-PEHeaderItemWindow::PEHeaderItemWindow(const QString& strItemName, QWidget* parent): HoverWindow(parent), m_layout(this)
+PEHeaderItemListWidget::PEHeaderItemListWidget( QWidget *parent) : ItemPairListWidget(parent)
 {
-    m_layout.setContentsMargins(0, 0, 0, 0);
-    QLabel* lblPEHeaderItem = new QBasicLabel(this);
-    int nPEHeaderItemHeight = 30;
-    lblPEHeaderItem->setObjectName("peHeaderLbl");
-    lblPEHeaderItem->setFixedSize(100, nPEHeaderItemHeight);
-    //lblPEHeaderItem->setMouseTracking(true);
-    m_layout.addWidget(lblPEHeaderItem);
-
-    QLabel* lblName = new QLabel(strItemName, this);
-    lblName->setFixedSize(140, nPEHeaderItemHeight);
-    lblName->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    //lblName->setMouseTracking(true);
-    item = lblName;
-    data = lblPEHeaderItem;
-    m_layout.addWidget(lblName);
+    initUI();
 }
 
-void PEHeaderItemWindow::setNameLblText(const QString& str)
-{
-    item->setText(str);
-}
-void PEHeaderItemWindow::setValueLblText(const QString& str)
-{
-    data->setText(str);
-}
-
-PEHeaderItemWindow::~PEHeaderItemWindow()
-{
-    //qDebug() << "~PEHeaderItemWindow";
-}
-
-
-void PEHeaderItemWindow::onHoverEvent(QMouseEvent* ev)
-{
-    if (m_tooltipWindow)
-    {
-        if (!m_tooltipWindow->isVisible())
-        {
-            QWidget* parent = parentWidget();
-            if (!parent)
-            {
-                return;
-            }
-            QPoint globalPt = parent->mapToGlobal(pos());
-            int nOffset = 10;
-            QPoint ptOffset(-nOffset, nOffset);
-            
-            int xPos = globalPt.x() - m_tooltipWindow->width() + ptOffset.x();
-            int yPos = globalPt.y() + ptOffset.y();
-            QDesktopWidget* desktop = QApplication::desktop();
-            QRect screenGeometry = desktop->screenGeometry();
-            int screenWidth = screenGeometry.width();
-            int screenHeight = screenGeometry.height();
-            if (xPos <= 0)
-            {
-                xPos = globalPt.x();
-                if (xPos < nOffset)
-                {
-                    xPos = nOffset;
-                }
-                yPos = globalPt.y() - m_tooltipWindow->height() - height() - nOffset;
-                if (yPos < 0)
-                {
-                    yPos = globalPt.y() + height() + nOffset;
-                }
-            }
-            else
-            {
-                if (xPos >= (screenWidth - m_tooltipWindow->width()))
-                {
-                    xPos = globalPt.x() - m_tooltipWindow->width() - nOffset;
-                }
-                if (yPos <= 0)
-                {
-                    yPos = globalPt.y() - m_tooltipWindow->height() - nOffset;
-                    if (yPos < nOffset)
-                    {
-                        yPos = nOffset;
-                    }
-                }
-                else
-                {
-                    int nBottomWinToolbarHeight = 40;
-                    if (yPos >= (screenHeight - m_tooltipWindow->height() - nOffset - nBottomWinToolbarHeight))
-                    {
-                        yPos = globalPt.y() - m_tooltipWindow->height() - nOffset;
-                    }
-                }
-                
-            }
-            QPoint pt(xPos, yPos);
-            m_tooltipWindow->move(pt);
-            m_tooltipWindow->show();
-        }
-    }
-}
-
-void PEHeaderItemWindow::onHoverLeave()
-{
-    if (m_tooltipWindow)
-    {
-        if (m_tooltipWindow->isVisible())
-        {
-            m_tooltipWindow->hide();
-        }
-    }
-}
-
-
-PEHeaderItemListWidget::PEHeaderItemListWidget( QWidget *parent) : QWidget(parent), m_vboxLayout(this)
-{
-    m_vboxLayout.setContentsMargins(0,0,0,0);
-    
-    for(auto &itemPair: getPEHeaderItemPairs())
-    {
-        PEHeaderItemWindow* item = new PEHeaderItemWindow(itemPair.value, this);
-        m_mapPEHeader[itemPair.key] = item;
-        m_vboxLayout.addWidget(item);
-    }
-}
-
-QList<ItemPair> PEHeaderItemListWidget::getPEHeaderItemPairs()
+QList<ItemPair> PEHeaderItemListWidget::getItemPairs()
 {
     QList<ItemPair> peHeaderItemsPairs = {
         { "ImageBase",            tr("ImageBase"), },
         { "EntryPoint(RVA)", tr("EntryPoint(RVA)"), },
         { "EntryPoint(RAW)",      tr("EntryPoint(RAW)"), },
-        { "DllCharacteristics",   tr("DllCharacteristics"), },
-        { "Characteristics",      tr("Characteristics"), },
+        { STR_DLL_CHARACTERISTICS,   tr("DllCharacteristics"), },
+        { STR_CHARACTERISTICS,      tr("Characteristics"), },
         { "SubSystem",            tr("SubSystem"), },
         { "Machine",              tr("Machine"), },
         { "SizeOfImage",          tr("SizeOfImage"), },
@@ -220,85 +104,37 @@ QList<ItemPair> PEHeaderItemListWidget::getPEHeaderItemPairs()
         { "NumberOfSections",     tr("NumberOfSections"), },
         { "SizeOfHeaders",        tr("SizeOfHeaders"), },
         { "CheckSum",             tr("CheckSum"), },
-        
-        
     };
     return peHeaderItemsPairs;
 }
 
 
-void PEHeaderItemListWidget::updatePEHeaderItemLbls()
-{
-    for (auto &item : getPEHeaderItemPairs())
-    {
-        this->updateItemLblText(item.key, item.value);
-    }
-}
-
 void PEHeaderItemListWidget::updateItemsData(const CPEInfo& peInfo)
 {
     DWORD dwEntryPointRVA = peInfo.getEntryPointRVA();
-    updateItemData("EntryPoint(RVA)", uintToHexStr(dwEntryPointRVA));
-    updateItemData("EntryPoint(RAW)", uintToHexStr(peInfo.rvaToFoa(dwEntryPointRVA)));
-    updateItemData("ImageBase", peInfo.m_bX86 ? uintToHexStr(peInfo.getImageBaseX86()) : uLongLongToHexStr(peInfo.getImageBaseX64()));
-    updateItemData("SizeOfImage", uintToHexStr(peInfo.getSizeOfImage()));
-    updateItemData("SectionAlignment", uintToHexStr(peInfo.getSectionAlignment()));
-    updateItemData("FileAlignment", uintToHexStr(peInfo.getFileAlignment()));
-    updateItemData("NumberOfSections", ushortToHexStr(peInfo.getNumberOfSections()));
-    updateItemData("Characteristics", ushortToHexStr(peInfo.getCharacteristics()));
-    updateItemData("SizeOfHeaders", uintToHexStr(peInfo.getCoffHeaderSize()));
-    updateItemData("CheckSum", uintToHexStr(peInfo.getCheckSum()));
-    updateItemData("Machine", ushortToHexStr(peInfo.getMachine()));
-    updateItemData("SubSystem", ushortToHexStr(peInfo.getSubSystem()));
-    updateItemData("DllCharacteristics", ushortToHexStr(peInfo.getDllCharacteristics()));
-}
+    setItemData("EntryPoint(RVA)", uintToHexStr(dwEntryPointRVA));
+    setItemData("EntryPoint(RAW)", uintToHexStr(peInfo.rvaToFoa(dwEntryPointRVA)));
+    setItemData("ImageBase", peInfo.m_bX86 ? uintToHexStr(peInfo.getImageBaseX86()) : uLongLongToHexStr(peInfo.getImageBaseX64()));
+    setItemData("SizeOfImage", uintToHexStr(peInfo.getSizeOfImage()));
+    setItemData("SectionAlignment", uintToHexStr(peInfo.getSectionAlignment()));
+    setItemData("FileAlignment", uintToHexStr(peInfo.getFileAlignment()));
+    setItemData("NumberOfSections", ushortToHexStr(peInfo.getNumberOfSections()));
+    setItemData("Characteristics", ushortToHexStr(peInfo.getCharacteristics()));
+    setItemData("SizeOfHeaders", uintToHexStr(peInfo.getCoffHeaderSize()));
+    setItemData("CheckSum", uintToHexStr(peInfo.getCheckSum()));
+    setItemData("Machine", ushortToHexStr(peInfo.getMachine()));
+    setItemData("SubSystem", ushortToHexStr(peInfo.getSubSystem()));
+    int nDllCharacteristics = peInfo.getDllCharacteristics();
+    setItemData(STR_DLL_CHARACTERISTICS, ushortToHexStr(nDllCharacteristics));
 
-void PEHeaderItemListWidget::updateItemData(const QString& itemName, const QString& data)
-{
-    if (m_mapPEHeader.contains(itemName))
+    if (!m_pDllCharacteristicsTipWidget)
     {
-        auto& item = m_mapPEHeader[itemName];
-        if (item)
-        {
-            item->setValueLblText(data);
-            if ("DllCharacteristics" == itemName)
-            {
-                if (!m_pDllCharacteristicsTipWidget)
-                {
-                    m_pDllCharacteristicsTipWidget = new DllCharacteristicsTipWidget(this);
-                    m_pDllCharacteristicsTipWidget->setWindowFlags(Qt::Tool);
-                    m_pDllCharacteristicsTipWidget->hide();
-                    item->setToolTip(m_pDllCharacteristicsTipWidget);
-                }
-                bool ok;
-                int nDllCharacteristics = data.toInt(&ok, 16);
-                if (ok) {
-                    m_pDllCharacteristicsTipWidget->updateData(nDllCharacteristics);
-                }
-                else {
-                    qDebug() << "bad hex value for dll characteristics";
-                }
-                
-            }
-        }
+        m_pDllCharacteristicsTipWidget = new DllCharacteristicsTipWidget(this);
+        m_pDllCharacteristicsTipWidget->setWindowFlags(Qt::Tool);
+        m_pDllCharacteristicsTipWidget->hide();
+        setItemTooltip(STR_DLL_CHARACTERISTICS, m_pDllCharacteristicsTipWidget);
     }
+    m_pDllCharacteristicsTipWidget->updateData(nDllCharacteristics);
 }
 
-void PEHeaderItemListWidget::updateItemLblText(const QString& itemName, const QString& str)
-{
-    if (m_mapPEHeader.contains(itemName))
-    {
-        auto& item = m_mapPEHeader[itemName];
-        if (item)
-        {
-            item->setNameLblText(str);
-        }
-    }
-}
-
-
-PEHeaderItemListWidget::~PEHeaderItemListWidget()
-{
-    
-}
 

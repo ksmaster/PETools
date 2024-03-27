@@ -2,7 +2,6 @@
 #define _PE_MAIN_WINDOW_H
 
 #include <QObject>
-#include <QWidget>
 #include <QVariant>
 #include <QApplication>
 #include <QHBoxLayout>
@@ -14,7 +13,6 @@
 #include <QVBoxLayout>
 #include <QList>
 #include <QMap>
-#include <QWidget>
 #include <QDragEnterEvent>
 #include <memory>
 #include <QThread>
@@ -32,6 +30,7 @@ class PEHeaderItemListWidget;
 class DataDirectoryWidget;
 class DosWidget;
 class sectionTable;
+class ExportFunctionWidget;
 
 
 
@@ -62,9 +61,11 @@ private:
     QTabWidget* m_tabWidget = nullptr;
     QLabel* m_lblDataDirectory;
     sectionTable* m_secTbl;
+    ExportFunctionWidget* m_exportFunctionWidget;
     QTranslator *m_translator;
     bool m_bTranslator = false;
     int m_nTabSectionHeader = -1;
+    int m_nTabExportFunction = -1;
 private:
     QMenu* m_pPEInfoMenu;
     QMenu* m_pHelpMenu;
@@ -76,15 +77,16 @@ private:
 private:
 	void initUI();
 private slots:
-   void ShowPEMainWindow();
+   void onOpenPE();
    void SwitchLanguage();
    void ShowAboutDialog();
 signals:
     void startLoadPEBasic(const QString& fileName);
 public slots:
       void onShowPEInfo();
-      void OnShowRVAToRAWWindow();
-      void OnClose();
+      void onShowExportTable();
+      void onShowRVAToRAWWindow();
+      void onClose();
 };
 
 

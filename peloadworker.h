@@ -14,9 +14,11 @@ private:
     QString m_strPEFileName;
     CPEInfo &m_peInfoRef;
  signals:
-    void startShowPEInfoOnGUI();
+     void startShowPEInfoOnGUI();
+     void startShowExportTableOnGUI();
 public slots:
- void loadPEBasic(const QString &fileName);
+    void loadPEBasic(const QString& fileName);
+    void loadExportTable();
 };
 
 #endif // PELOADWORKER_H

@@ -12,8 +12,6 @@
 #include "common/baseWindow.h"
 
 
-class CPEInfo;
-
 
 class DosWidget : public BaseWindow
 {

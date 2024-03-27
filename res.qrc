@@ -10,9 +10,12 @@
         <file alias="RWX">icon/RWX.png</file>
         <file alias="RX">icon/RX.png</file>
         <file alias="WX">icon/WX.png</file>
+        <file alias="fn">icon/fn.png</file>
+        <file alias="module">icon/module.png</file>
     </qresource>
     <qresource prefix="/css">
         <file alias="mainwindow">css/mainwindow.css</file>
         <file alias="rvaToFoaWindow">css/rvaToFoaWindow.css</file>
+        <file alias="exportFunctionWidget">css/exportFunctionWidget.css</file>
     </qresource>
 </RCC>

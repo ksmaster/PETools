@@ -1,0 +1,13 @@
+
+QWidget#exportDllTree {
+    background-color: #F0F0F2;
+}
+
+QLabel#noExportHint {
+    background-color: #F0F0F2;
+    padding-left: 10;
+    qproperty-alignment: 'AlignTop';
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 20px;
+}

@@ -35,7 +35,11 @@ find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 MESSAGE(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR} ")
 MESSAGE(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR} ")
 MESSAGE(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories(${Qt5Widgets_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/PEInfo" "${CMAKE_CURRENT_SOURCE_DIR}/Util" "${CMAKE_CURRENT_SOURCE_DIR}/GUI")
+include_directories(${Qt5Widgets_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} 
+   "${CMAKE_CURRENT_SOURCE_DIR}/PEInfo" 
+   "${CMAKE_CURRENT_SOURCE_DIR}/Util" 
+   "${CMAKE_CURRENT_SOURCE_DIR}/GUI"
+   )
 file(GLOB_RECURSE PE_LIB_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/PEInfo/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/Util/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/GUI/*.cpp")
 
 
@@ -53,7 +57,8 @@ set (GUI_CPP_FILES
     GUI/dataDirectoryWidget.cpp
     GUI/PEHeaderItemListWidget.cpp
     GUI/sectionTable.cpp
-    
+    GUI/exportFunctionWidget.cpp
+    GUI/dllTree.cpp 
 )
 
 set (GUI_HEADER_FILES
@@ -61,13 +66,14 @@ set (GUI_HEADER_FILES
     GUI/common/hoverWindow.h
     GUI/common/qbasiclabel.h
     GUI/common/hexlineedit.h
+    GUI/constants/constStrings.h
     GUI/PEMainWindow.h
     GUI/rvatofoawindow.h
     GUI/dataDirectoryWidget.h
     GUI/PEHeaderItemListWidget.h
     GUI/sectionTable.h
-    
-    
+    GUI/exportFunctionWidget.h
+    GUI/dllTree.h
 )
 
 SET(PROJ_SOURCES
