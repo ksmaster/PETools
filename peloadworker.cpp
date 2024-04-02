@@ -1,33 +1,94 @@
-#include "peloadworker.h"
 #include <QThread>
 #include <QDebug>
+#include "peloadworker.h"
+#include "Util.h"
 
-PELoadWorker::PELoadWorker(CPEInfo &peInfo, QObject *parent) : QObject(parent),m_bPEBasicLoaded(false),m_peInfoRef(peInfo)
+
+PELoadWorker::PELoadWorker(PE_TASK_TYPE taskType, CPEInfo &peInfo, QObject *parent) : QObject(parent), m_taskType(taskType),
+m_peInfoRef(peInfo)
 {
+    connect(this, &PELoadWorker::executeTask, this, &PELoadWorker::doPETask);
+    connect(this, &PELoadWorker::SignalStartNewPETask, this, &PELoadWorker::onSignalStartNewPETask);
+    
+}
 
+void PELoadWorker::doPETask(int nType)
+{
+    CBinaryStateGuard guard(m_bIsRunning, true);
+    if (m_taskType != nType)
+    {
+        return;
+    }
+    switch (nType)
+    {
+    case PE_TASK_TYPE_LOAD_BASIC:
+    {
+        loadPEBasic();
+        if (m_peInfoRef.loaded())
+        {
+            emit relayTask(PE_TASK_TYPE_LOAD_EAT);
+            emit relayTask(PE_TASK_TYPE_LOAD_IDT);
+        }
+        break;
+    }
+    case PE_TASK_TYPE_LOAD_EAT:
+    {
+        loadExportTable();
+        break;
+    }
+    
+    case PE_TASK_TYPE_LOAD_IDT:
+    {
+        loadImportTable();
+        break;
+    }
+    case PE_TASK_TYPE_LOAD_CONTROLLER:
+    {
+        break;
+    }
+    default:
+        return;
+    }
+    emit updateGUI(m_taskType);
+}
+
+void PELoadWorker::onSignalStartNewPETask(const QString& fileName)
+{
+    emit waitAndStartNewTask(fileName);
 }
 
 
-void PELoadWorker::loadPEBasic(const QString &fileName)
+void PELoadWorker::loadPEBasic()
 {
-    qDebug() << "loadPEBasic: " << fileName  << ", thread id: " << QThread::currentThreadId() << ", Thread: " << QThread::currentThread();
+    qDebug() << "PELoadWorker::loadPEBasic: thread: " << QThread::currentThread();
 #if defined(WIN32)
-     m_peInfoRef.LoadPE(reinterpret_cast<LPCTSTR>(fileName.utf16()));
+     m_peInfoRef.LoadPE(reinterpret_cast<LPCTSTR>(m_strPEFileName.utf16()));
 #elif __linux__
-     qDebug() << "before calling:  fileName length: " << fileName.length();
+     qDebug() << "before calling:  fileName length: " << m_strPEFileName.length();
      m_peInfoRef.LoadPE(fileName.toUtf8().constData());
 #endif
-    emit startShowPEInfoOnGUI();
-    loadExportTable();
-    emit startShowExportTableOnGUI();
+    
+   
 }
 
 void PELoadWorker::loadExportTable()
 {
-    qDebug() << "loadExportTable: " << ", thread id: " << QThread::currentThreadId() << ", Thread: " << QThread::currentThread();
+    qDebug() << "PELoadWorker::loadExportTable: thread: " << QThread::currentThread();
     if (!m_peInfoRef.loaded())
     {
         return;
     }
     m_peInfoRef.loadEATDataDirectory();
 }
+
+void PELoadWorker::loadImportTable()
+{
+    qDebug() << "PELoadWorker::loadImportTable: thread: " << QThread::currentThread();
+    if (!m_peInfoRef.loaded())
+    {
+        return;
+    }
+    m_peInfoRef.loadImportDataDirectory();
+}
+
+

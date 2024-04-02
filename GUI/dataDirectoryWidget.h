@@ -1,33 +1,24 @@
 #ifndef _DATA_DIRECTORY_WIDGET_H
 #define _DATA_DIRECTORY_WIDGET_H
-#include <QWidget>
-#include <QRadioButton>
-#include <QButtonGroup>
-#include <QMap>
-#include <QLabel>
 #include <QVBoxLayout>
-#include <QTableView>
 #include "PEInfo.h"
+#include "common/baseTableView.h"
 
 
 class QStandardItemModel;
 
 
-class DataDirectoryWidget : public QTableView
+class DataDirectoryWidget : public baseTableView
 {
     Q_OBJECT
 
 public:
-    explicit DataDirectoryWidget(QWidget *parent = nullptr);
-    ~DataDirectoryWidget();
-    void reloadAllData(const CPEInfo& peInfo);
+    explicit DataDirectoryWidget(const CPEInfo& _peInfo, QWidget *parent = nullptr);
 private:
-    void setHeader();
-    void addDataDirectory(const QString& strName, const CPEInfo& peInfo, const IMAGE_DATA_DIRECTORY&);
+    QList<QStandardItem*> createRow(int index);
+    QList<ColInfo>  getColsInfo();
 private:
-    QStandardItemModel* m_model;
-private:
-   
+    const CPEInfo& peInfo;
 };
 
 #endif

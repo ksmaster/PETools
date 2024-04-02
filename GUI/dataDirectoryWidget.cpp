@@ -8,64 +8,24 @@
 
 
 
-DataDirectoryWidget::DataDirectoryWidget(QWidget *parent): QTableView(parent)
+DataDirectoryWidget::DataDirectoryWidget(const CPEInfo& _peInfo, QWidget *parent): baseTableView(parent), peInfo(_peInfo)
 {
-    m_model = new QStandardItemModel();
-    this->setModel(m_model);
-    this->horizontalScrollBar()->setDisabled(true);
-    this->horizontalScrollBar()->hide();
-    QScrollBar* verticalScrollbar = this->verticalScrollBar();
-    //verticalScrollbar->setStyleSheet(getCssContent(":/css/scrollBar.css"));
-    verticalScrollbar->setFixedWidth(10);
-}
-
-
-void DataDirectoryWidget::setHeader()
-{
-    m_model->clear();
-    QStringList headStrList;
-    headStrList << QStringLiteral("") << tr("RVA") << tr("FOA") << tr("Size");
-    m_model->setHorizontalHeaderLabels(headStrList);
-    int nWidth = 120;
-    setColumnWidth(0, nWidth + 20);
-    setColumnWidth(1, nWidth);
-    setColumnWidth(2, nWidth);
-    setColumnWidth(3, nWidth);
-    verticalHeader()->setDefaultSectionSize(24);
-    verticalHeader()->hide();
-    horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
    
 }
 
-void DataDirectoryWidget::addDataDirectory(const QString& strName, const CPEInfo& peInfo, const IMAGE_DATA_DIRECTORY& imgDataDirectory)
+QList<ColInfo> DataDirectoryWidget::getColsInfo()
 {
-    QList<QStandardItem*> dataDirectoryitems;
-    QStringList dataDirectoryItemStrList{
-        strName,
-        uintToHexStr(imgDataDirectory.VirtualAddress),
-        uintToHexStr(peInfo.rvaToFoa(imgDataDirectory.VirtualAddress)),
-        uintToHexStr(imgDataDirectory.Size),
+    QList<ColInfo> colInfos = {
+        {"",         140,  },
+        {tr("RVA"),  120,  },
+        {tr("FOA"),  120,  },
+        {tr("Size"), 120,  },
     };
-    for (auto itemStr : dataDirectoryItemStrList)
-    {
-        QStandardItem* item = new QStandardItem(itemStr);
-        item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
-        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-        dataDirectoryitems.append(item);
-    }
-    m_model->appendRow(dataDirectoryitems);
-    int nWidth = 120;
-    setColumnWidth(0, nWidth + 20);
-    setColumnWidth(1, nWidth);
-    setColumnWidth(2, nWidth);
-    setColumnWidth(3, nWidth);
+    return colInfos;
 }
 
-void DataDirectoryWidget::reloadAllData(const CPEInfo& peInfo)
+QList<QStandardItem*> DataDirectoryWidget::createRow(int index)
 {
-    //show datadirectory index
-    //IMAGE_DIRECTORY_ENTRY_EXPORT
-    DWORD dwDataDirElemCnt = peInfo.getDataDirectoryElemCnt();
     QStringList strDataDirectoryList = {
         tr("Export"),
         tr("Import"),
@@ -84,23 +44,27 @@ void DataDirectoryWidget::reloadAllData(const CPEInfo& peInfo)
         tr("ComDescriptor"),
         //tr("Reserved"),
     };
-    setHeader();
-    if (dwDataDirElemCnt > (DWORD)strDataDirectoryList.length())
+    if (index >= strDataDirectoryList.length())
     {
-        dwDataDirElemCnt = strDataDirectoryList.length();
+        return baseTableView::createRow(index);
     }
-    for (WORD idx = 0; idx < dwDataDirElemCnt; ++idx) {
-        const IMAGE_DATA_DIRECTORY* pDataDir = peInfo.getDataDirectory(idx);
-        if (nullptr == pDataDir) {
-            return;
-        }
-        this->addDataDirectory(strDataDirectoryList[idx], peInfo, *pDataDir);
+
+    const IMAGE_DATA_DIRECTORY* pDataDir = peInfo.getDataDirectory(index);
+    if (nullptr == pDataDir) {
+        return baseTableView::createRow(index);
     }
+
+    QString strName;
+    if (index >= 0 && index < strDataDirectoryList.length())
+    {
+        strName = strDataDirectoryList[index];
+    }
+
+    QStringList dataDirectoryItemStrList{
+        strName,
+        uintToHexStr(pDataDir->VirtualAddress),
+        uintToHexStr(peInfo.rvaToFoa(pDataDir->VirtualAddress)),
+        uintToHexStr(pDataDir->Size),
+    };
+    return getStandardItemList(dataDirectoryItemStrList);
 }
-
-
-
-DataDirectoryWidget::~DataDirectoryWidget()
-{
-}
-

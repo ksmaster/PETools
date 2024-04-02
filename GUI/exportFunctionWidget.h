@@ -33,7 +33,7 @@ class ExportFunctionWidget : public BaseWindow
 public:
     explicit ExportFunctionWidget(QWidget *parent = nullptr);
     void retranslateUi();
-    void reloadExportDirectoryInfo(const IMAGE_EXPORT_INFO_WRAPPER&);
+    void reloadExportDirectoryInfo(const IMAGE_EXPORT_INFO_WRAPPER& );
     void clear();
 private:
     QVBoxLayout m_vLayout;

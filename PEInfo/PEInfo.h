@@ -50,6 +50,9 @@ public:
     void init()
     {
         m_bLoaded = false;
+        m_vecFuncName.clear();
+        m_vecFuncAddr.clear();
+        m_vecFuncNameOrdinal.clear();
     }
 	void  SetImgExportInfoWrapper(const IMAGE_EXPORT_DIRECTORY &imgExportDirectory, const std::string &dllName, 
 		 const std::vector<std::string> &vecFuncName,
@@ -94,23 +97,25 @@ public:
         if (nameIdx >= m_vecFuncNameOrdinal.size()) {
             return false;
         }
-        wFuncNameOrdinal = m_vecFuncNameOrdinal[nameIdx];
+        WORD wFuncNameOrdinalHint = m_vecFuncNameOrdinal[nameIdx];
         //std::cout << "nameIdx = " << std::hex << std::setfill('0') << std::setw(8) << nameIdx << std::endl;
         //std::cout << "dwFuncNameOrdinal = " << std::hex << std::setfill('0') << std::setw(8) << wFuncNameOrdinal << std::endl;
-        if (wFuncNameOrdinal >= m_vecFuncAddr.size()) {
-            if (wFuncNameOrdinal >= m_imgExportDirectory.Base) {
-                DWORD dwFuncAddrIdx = wFuncNameOrdinal - m_imgExportDirectory.Base;
+        if (wFuncNameOrdinalHint >= m_vecFuncAddr.size()) {
+            if (wFuncNameOrdinalHint >= m_imgExportDirectory.Base) {
+                DWORD dwFuncAddrIdx = wFuncNameOrdinalHint - m_imgExportDirectory.Base;
                 std::cout << "index = dwFuncNameOrdinal - Base = " << std::hex << std::setfill('0') << std::setw(8) << dwFuncAddrIdx << std::endl;
                 if (dwFuncAddrIdx >= m_vecFuncAddr.size()) {
                     return false;
                 }
                 dwFuncAddr = m_vecFuncAddr[dwFuncAddrIdx];
+                wFuncNameOrdinal = wFuncNameOrdinalHint + (WORD)m_imgExportDirectory.Base;
                 return true;
             }
             return false;
         }
         else {            
-            dwFuncAddr = m_vecFuncAddr[wFuncNameOrdinal];
+            dwFuncAddr = m_vecFuncAddr[wFuncNameOrdinalHint];
+            wFuncNameOrdinal = wFuncNameOrdinalHint + (WORD)m_imgExportDirectory.Base;
             return true;
         } 
     }
@@ -128,6 +133,7 @@ public:
 #elif __linux__
     bool LoadPE(const char* pFileName);
 #endif
+   
     bool loaded() {return m_bLoaded;}
     bool readPEInfoFromMapView(void* pMapView);
 	void show();
@@ -182,9 +188,11 @@ public:
         return m_bX86 ? m_peHeader.x86.OptionalHeader.NumberOfRvaAndSizes : m_peHeader.x64.OptionalHeader.NumberOfRvaAndSizes;
     }
     const IMAGE_DATA_DIRECTORY * getDataDirectory(DWORD index) const;
-    IMAGE_DOS_HEADER getImageDosHeader() { return m_dosHeader;   }
-    const std::vector<IMAGE_SECTION_HEADER>& getImageSectionHeaders() { return m_vecImgSecHeader; }
+    IMAGE_DOS_HEADER getImageDosHeader()const { return m_dosHeader;   }
+    const std::vector<IMAGE_SECTION_HEADER>& getImageSectionHeaders() const { return m_vecImgSecHeader; }
     IMAGE_EXPORT_INFO_WRAPPER& getImageExportInfo() { return m_imgExportInfoWrapper; }
+    const std::vector<IMAGE_IMPORT_DESCRIPTOR_Wrapper>& getImageImportInfo() const { return m_vecImgImportDesc; }
+    void setStopFlag(bool bFlag) { m_bNeedStopParsing = bFlag; }
 private:
 	void printPEHeaderX86();
 	void printPEHeaderX64();
@@ -199,7 +207,7 @@ private:
 	std::string getStrFromRva(DWORD dwRva);
 	void getDWORDVecFromStartRva(DWORD dwRva, std::vector<DWORD> &vecDwValue, DWORD dwValueNum = 0);
     void getWORDVecFromStartRva(DWORD dwRva, std::vector<WORD> &vecDwValue, DWORD dwValueNum = 0);
-
+    
 private:
 	std::vector<IMAGE_SECTION_HEADER> m_vecImgSecHeader;
 	std::vector<IMAGE_IMPORT_DESCRIPTOR_Wrapper> m_vecImgImportDesc;
@@ -218,6 +226,7 @@ private:
 #endif
     unsigned long long m_dwFileSize;
 	IMAGE_EXPORT_INFO_WRAPPER m_imgExportInfoWrapper;
+    bool m_bNeedStopParsing = false;
 public:
     bool m_bX86;
 };

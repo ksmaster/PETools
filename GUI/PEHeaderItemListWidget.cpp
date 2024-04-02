@@ -7,7 +7,7 @@
 #include "common/qbasiclabel.h"
 #include "constants/constStrings.h"
 #include "Util.h"
-#include "globaldata.h"
+#include "PEInfo.h"
 
  
 

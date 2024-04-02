@@ -19,6 +19,8 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
     MESSAGE(STATUS "current platform: Linux ")
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
     MESSAGE(STATUS "current platform: Windows")
+    enable_language("RC")
+    set (WIN32_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/icon.rc)
     add_definitions(-D_UNICODE -DWIN32 -DUNICODE)
     set(CMAKE_WIN32_EXECUTABLE ON)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
@@ -48,21 +50,24 @@ MESSAGE(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 MESSAGE(STATUS "PE_LIB_SRC_FILES: ${PE_LIB_SRC_FILES}")
 
 set (GUI_CPP_FILES
-    GUI/common/baseWindow.cpp
+    GUI/common/baseWindow.cpp 
+    GUI/common/baseTableView.cpp
     GUI/common/hoverWindow.cpp
     GUI/common/qbasiclabel.cpp
     GUI/common/hexlineedit.cpp
     GUI/PEMainWindow.cpp
     GUI/rvatofoawindow.cpp
     GUI/dataDirectoryWidget.cpp
-    GUI/PEHeaderItemListWidget.cpp
+    GUI/PEHeaderItemListWidget.cpp 
     GUI/sectionTable.cpp
+    GUI/importTable.cpp
     GUI/exportFunctionWidget.cpp
     GUI/dllTree.cpp 
 )
 
 set (GUI_HEADER_FILES
     GUI/common/baseWindow.h
+    GUI/common/baseTableView.h
     GUI/common/hoverWindow.h
     GUI/common/qbasiclabel.h
     GUI/common/hexlineedit.h
@@ -71,24 +76,23 @@ set (GUI_HEADER_FILES
     GUI/rvatofoawindow.h
     GUI/dataDirectoryWidget.h
     GUI/PEHeaderItemListWidget.h
-    GUI/sectionTable.h
+    GUI/sectionTable.h 
+    GUI/importTable.h
     GUI/exportFunctionWidget.h
     GUI/dllTree.h
 )
 
 SET(PROJ_SOURCES
     main.cpp
-    mythread.cpp
     peloadworker.cpp
-    globaldata.cpp
+    taskMgr.cpp
     ${GUI_CPP_FILES}
     
 )
  
 SET(PROJ_HEADERS
-    mythread.h
     peloadworker.h
-    globaldata.h
+    taskMgr.h
     ${GUI_HEADER_FILES}
 )
 
@@ -97,6 +101,8 @@ SET(PROJ_HEADERS
 SET(PROJ_RESOURCES 
     res.qrc
 ) 
+
+set (RC_ICONS = pe.ico)
   
 #call precompiler moc, need to use QT5_WRAP_CPP macro
 QT5_WRAP_CPP(PROJ_HEADERS_MOC ${PROJ_HEADERS})
@@ -135,13 +141,14 @@ endforeach()
  
 
 
-ADD_EXECUTABLE( ${CMAKE_PROJECT_NAME} 
+ADD_EXECUTABLE( ${CMAKE_PROJECT_NAME}  WIN32
     ${QM_FILES}
     ${PROJ_SOURCES} 
     ${PE_LIB_SRC_FILES}
     ${PROJ_HEADERS_MOC} 
     ${PROJ_FORMS_HEADERS}
     ${PROJ_RESOURCES_RCC}
+    ${WIN32_RESOURCES}
 )
  
 TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} Qt5::Core Qt5::Widgets Qt5::Gui)

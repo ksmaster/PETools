@@ -72,15 +72,8 @@ void IconButtonDelegate::setModelData(QWidget* editor, QAbstractItemModel* model
 }
  
 
-sectionTable::sectionTable(QWidget *parent): QTableView(parent)
+sectionTable::sectionTable(QWidget *parent): baseTableView(parent)
 {  
-    m_model = new QStandardItemModel();
-    this->setModel(m_model);
-    this->horizontalScrollBar()->setDisabled(true);
-    this->horizontalScrollBar()->hide();
-    QScrollBar* verticalScrollbar = this->verticalScrollBar();
-    //verticalScrollbar->setStyleSheet(getCssContent(":/css/scrollBar.css"));
-    verticalScrollbar->setFixedWidth(10);
     this->setStyleSheet(getCssContent("sectionTable.css"));
 }
 
@@ -93,35 +86,19 @@ QList<ColInfo>  sectionTable::getColsInfo()
         {tr("Virtual Size"), 80, },
         {tr("RAW Offset"), 80, },
         {tr("RAW Size"), 80, },
-        {tr("Characteristics"), 100, },
+        {tr("Characteristics"), 100, }, 
         {"", 50,},
-    };
-    return colInfos;
-}
+    };    
+    return colInfos; 
+}  
 
-void sectionTable::setHeader()
+QList<QStandardItem*> sectionTable::createRow(int index)
 {
-    m_model->clear();
-    QStringList headStrList;
-    for (auto& colInfo : getColsInfo())
+    if (index < 0 || index >= (int)m_vecImgSectionHeader.size())
     {
-        headStrList << colInfo.strHead;
+        return baseTableView::createRow(index);
     }
-    m_model->setHorizontalHeaderLabels(headStrList);
-    int nIdx = 0;
-    for (auto& colInfo : getColsInfo())
-    {
-        setColumnWidth(nIdx++, colInfo.nColWidth);
-    }
-    
-    verticalHeader()->setDefaultSectionSize(24);
-    verticalHeader()->hide();
-    horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
-}
-
-void sectionTable::addItem(unsigned int index, const IMAGE_SECTION_HEADER& imageSecHeader)
-{
-    QList<QStandardItem*> items;
+    auto &imageSecHeader = m_vecImgSectionHeader[index];
     QStringList itemStrList{
         QString::number(index),
         QString::fromUtf8((const char*)imageSecHeader.Name, IMAGE_SIZEOF_SHORT_NAME),
@@ -133,34 +110,23 @@ void sectionTable::addItem(unsigned int index, const IMAGE_SECTION_HEADER& image
         uintToHexStr(imageSecHeader.Characteristics),//to draw image for Characteristics
     };
 
-    for (auto itemStr : itemStrList)
-    {
-        QStandardItem* item = new QStandardItem(itemStr);
-        item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
-        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-        items.append(item);
-    }
-    m_model->appendRow(items);
-    int nIdx = 0;
-    for (auto& colInfo : getColsInfo())
-    {
-        setColumnWidth(nIdx++, colInfo.nColWidth);
-    }
+    return getStandardItemList(itemStrList);
+    
 }
- 
-void sectionTable::reloadSections(const std::vector<IMAGE_SECTION_HEADER>& imageSectionHeaders)
+
+
+void sectionTable::preSetItemDelegate()
 {
-    setHeader();
     if (!m_myStandardDelegate)
     {
         m_myStandardDelegate = new IconButtonDelegate(this);
     }
     this->setItemDelegateForColumn(SECTION_CHARACTERISTICS, m_myStandardDelegate);
-    //m_model->removeRows(0, m_model->rowCount());
-    for (unsigned int i=0; i < imageSectionHeaders.size(); ++i)
-    {
-        addItem(i, imageSectionHeaders[i]);
-    }
-    
+}
+ 
+void sectionTable::reloadSections(const std::vector<IMAGE_SECTION_HEADER>& imageSectionHeaders)
+{
+    m_vecImgSectionHeader = imageSectionHeaders;
+    reload(m_vecImgSectionHeader.size());
 }
 

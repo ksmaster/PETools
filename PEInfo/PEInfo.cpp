@@ -2,6 +2,7 @@
 #include <iostream>
 #include<iomanip>
 #include<cassert>
+#include <QThread>
 #include <QDebug>
 using namespace std;
 
@@ -329,6 +330,7 @@ bool CPEInfo::LoadPE(const char* pFileName) {
        if (m_pMapViewBase) {
            m_bLoaded = readPEInfoFromMapView(m_pMapViewBase);
        }
+	  
        return m_bLoaded;
 }
 
@@ -337,11 +339,11 @@ bool CPEInfo::readPEInfoFromMapView(void* pMapViewBase) {
 		return false;
 	}
 	memcpy(&m_dosHeader, pMapViewBase, sizeof(m_dosHeader));
-    qDebug() << "m_dosHeader.e_magic: " << hex << m_dosHeader.e_magic << "sizeof(m_dosHeader): " << sizeof(m_dosHeader);
+    //qDebug() << "m_dosHeader.e_magic: " << hex << m_dosHeader.e_magic << "sizeof(m_dosHeader): " << sizeof(m_dosHeader);
 	valid_magic(reinterpret_cast<unsigned char*>(&m_dosHeader.e_magic));
 
 	//PE Header
-    qDebug() << "m_dosHeader.e_lfanew: " << hex << m_dosHeader.e_lfanew << "sizeof(m_peHeader.x86): " << sizeof(m_peHeader.x86);
+    //qDebug() << "m_dosHeader.e_lfanew: " << hex << m_dosHeader.e_lfanew << "sizeof(m_peHeader.x86): " << sizeof(m_peHeader.x86);
 	memcpy(&m_peHeader.x86, reinterpret_cast<unsigned char*>(pMapViewBase) + m_dosHeader.e_lfanew, sizeof(m_peHeader.x86));
 	valid_signature(reinterpret_cast<unsigned char*>(&m_peHeader.x86.Signature));
 	if (m_peHeader.x86.OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {  //0x10b
@@ -446,10 +448,17 @@ void CPEInfo::loadOrigThunkDetail(DWORD orgFirstThunk) {
 		}
 		else {
 			DWORD foa = rvaToFoa(pImgThunkData->u1.AddressOfData);
-			IMAGE_IMPORT_BY_NAME *pImgThunkData = reinterpret_cast<IMAGE_IMPORT_BY_NAME*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + foa);
-			ImportHintName importHintName(*pImgThunkData);
-			vecImportHintName.emplace_back(importHintName);
-			//importHintName.showInfo();
+			if (-1 != foa)
+			{
+				IMAGE_IMPORT_BY_NAME* pImgThunkData = reinterpret_cast<IMAGE_IMPORT_BY_NAME*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + foa);
+				ImportHintName importHintName(*pImgThunkData);
+				vecImportHintName.emplace_back(importHintName);
+				//importHintName.showInfo();
+			}
+			else
+			{
+				break;
+			}
 		}
 		++pImgThunkData;
 	}
@@ -489,6 +498,7 @@ void CPEInfo::getDWORDVecFromStartRva(DWORD dwRva, std::vector<DWORD> &vecDwValu
 	//printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapView) + dwFoa, 0x30);
 
 	DWORD *pdwValue = reinterpret_cast<DWORD*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + dwFoa);
+	
 	if (0 == dwValueNum) {
 		while (*pdwValue != 0) {
 			vecDwValue.emplace_back(*pdwValue);
@@ -509,6 +519,8 @@ void CPEInfo::getWORDVecFromStartRva(DWORD dwRva, std::vector<WORD> &vecDwValue,
     //printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapView) + dwFoa, 0x30);
 
     WORD *pdwValue = reinterpret_cast<WORD*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + dwFoa);
+
+	
     if (0 == dwValueNum) {
         while (*pdwValue != 0) {
             vecDwValue.emplace_back(*pdwValue);
@@ -525,6 +537,7 @@ void CPEInfo::getWORDVecFromStartRva(DWORD dwRva, std::vector<WORD> &vecDwValue,
 
 //
 void CPEInfo::loadImportDataDirectory() {
+	m_vecImgImportDesc.clear();
 	const IMAGE_DATA_DIRECTORY * pImportDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT);
 	if (!pImportDataDirectory) {
 		return;
@@ -533,7 +546,8 @@ void CPEInfo::loadImportDataDirectory() {
 	DWORD importDataDirFoa = rvaToFoa(rva);
 	
 	//printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapView) + foa, pImportDataDirectory->Size);
-	assert((pImportDataDirectory->Size % sizeof(IMAGE_IMPORT_DESCRIPTOR)) == 0);
+	DWORD dwImageImportDescSize = sizeof(IMAGE_IMPORT_DESCRIPTOR);
+//	assert((pImportDataDirectory->Size % dwImageImportDescSize) == 0);
 
 	IMAGE_IMPORT_DESCRIPTOR *pImgImportDesc = reinterpret_cast<IMAGE_IMPORT_DESCRIPTOR*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + importDataDirFoa);
 
@@ -544,16 +558,16 @@ void CPEInfo::loadImportDataDirectory() {
         if (pImgImportDesc->OriginalFirstThunk) {
             loadOrigThunkDetail(pImgImportDesc->OriginalFirstThunk);
 		}
-		cout << "TimeDateStamp: " << hex << setfill('0') << setw(8) << pImgImportDesc->TimeDateStamp << endl;
-		cout << "ForwarderChain: " << hex << setfill('0') << setw(8) << pImgImportDesc->ForwarderChain << endl;
-		cout << "Name(RVA): " << hex << setfill('0') << setw(8) << pImgImportDesc->Name << endl;
+		//cout << "TimeDateStamp: " << hex << setfill('0') << setw(8) << pImgImportDesc->TimeDateStamp << endl;
+		//cout << "ForwarderChain: " << hex << setfill('0') << setw(8) << pImgImportDesc->ForwarderChain << endl;
+		//cout << "Name(RVA): " << hex << setfill('0') << setw(8) << pImgImportDesc->Name << endl;
 		if (pImgImportDesc->FirstThunk) {
 			loadFirstThunkDetail(pImgImportDesc->FirstThunk);
 		}
 		IMAGE_IMPORT_DESCRIPTOR_Wrapper imgImportDescWrapper(*pImgImportDesc, getStrFromRva(pImgImportDesc->Name));
 		m_vecImgImportDesc.emplace_back(imgImportDescWrapper);
-		imgImportDescWrapper.showInfo();
-		++pImgImportDesc;
+		//imgImportDescWrapper.showInfo();
+		++ pImgImportDesc;
 	}
 }
 
@@ -600,6 +614,7 @@ void CPEInfo::loadEATDataDirectory() {
 			std::vector<WORD> vecFuncNameOrdinal;
 			if (pImgExportDirectory->NumberOfNames) {
 			    getDWORDVecFromStartRva(pImgExportDirectory->AddressOfNames, vecFuncNameAddr, pImgExportDirectory->NumberOfNames);
+				int nIdx = 0;
 				for (auto dwFunNameAddr : vecFuncNameAddr) {
 					vecFuncName.emplace_back(getStrFromRva(dwFunNameAddr));
 				}

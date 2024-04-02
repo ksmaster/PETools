@@ -37,12 +37,8 @@ void ExportDirectoryItems::updateData(const IMAGE_EXPORT_DIRECTORY& imageExportD
 {
     qint64 timestamp = imageExportDir.TimeDateStamp;
 
-    // Convert timestamp to QDateTime
-    QDateTime dateTime = QDateTime::fromSecsSinceEpoch(timestamp);
-
-    // Convert QDateTime to string
-    QString dateString = dateTime.toString("yyyy-MM-dd hh:mm:ss");
-    setItemData("TimeDateStamp", dateString);
+    
+    setItemData("TimeDateStamp", uintToHexStr(timestamp));
     setItemData("MajorVersion", QString::number(imageExportDir.MajorVersion));
     setItemData("MinorVersion", QString::number(imageExportDir.MinorVersion));
     setItemData("NumberOfFunctions", QString::number(imageExportDir.NumberOfFunctions));

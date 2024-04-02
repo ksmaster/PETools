@@ -17,26 +17,22 @@
 #include "dosWidget.h"
 #include "sectionTable.h"
 #include "exportFunctionWidget.h"
+#include "importTable.h"
 
 #include "Util.h"
 
 
 
 
-PEMainWindow::PEMainWindow(QWidget* parent) :BaseWindow(parent), m_gd(this)
+PEMainWindow::PEMainWindow(QWidget* parent) :BaseWindow(parent)
+
 {
     qDebug() << "PEMainWindow thread: " << QThread::currentThread();
     m_translator = new QTranslator();
     initUI();
-    
-    m_gd.init();
-    PELoadWorker* peLoadWorker = m_gd.GetPELoadWorker();
-    if (peLoadWorker) {
-        connect(peLoadWorker, &PELoadWorker::startShowPEInfoOnGUI, this, &PEMainWindow::onShowPEInfo);
-        connect(peLoadWorker, &PELoadWorker::startShowExportTableOnGUI, this, &PEMainWindow::onShowExportTable);
-        connect(this, &PEMainWindow::startLoadPEBasic, peLoadWorker, &PELoadWorker::loadPEBasic);
-    }
-    qDebug() << "PEMainWindow: " << ", ThreadID: " << QThread::currentThreadId();
+    auto taskMgr = TaskMgr::instance();
+    taskMgr->init();
+    connect(taskMgr, &TaskMgr::updateGUI, this, &PEMainWindow::onUpdateUI);
 }
 
  
@@ -45,7 +41,7 @@ void PEMainWindow::initUI()
     setAcceptDrops(true);
     setFixedSize(800, 600);
     setAcceptDrops(true);
-
+   // setAttribute(Qt::WA_QuitOnClose, true);
     setObjectName("PEMainWindow");
 
     _mainLayout = new QVBoxLayout(this);
@@ -83,7 +79,7 @@ void PEMainWindow::initUI()
     m_lblDataDirectory->setFixedHeight(24);
     vLayoutRightWidget->addWidget(m_lblDataDirectory);
    
-    m_dataDirectoryTbl = new DataDirectoryWidget(rightWidget);
+    m_dataDirectoryTbl = new DataDirectoryWidget(TaskMgr::instance()->GetPEInfo(), rightWidget);
     m_dataDirectoryTbl->setObjectName("dataDirectoryTbl");
     vLayoutRightWidget->addWidget(m_dataDirectoryTbl);
 
@@ -104,7 +100,9 @@ void PEMainWindow::initUI()
     m_exportFunctionWidget = new ExportFunctionWidget(m_tabWidget);
     m_nTabExportFunction = m_tabWidget->addTab(m_exportFunctionWidget, "");
 
-
+    m_importTbl = new importTable(TaskMgr::instance()->GetPEInfo(), m_tabWidget);
+    m_nTabImportFunction = m_tabWidget->addTab(m_importTbl, "");
+    
 
     int nStatusBarHeight = 30;
     m_statusbar = new QWidget(this);
@@ -149,9 +147,10 @@ void PEMainWindow::retranslateUi()
 
     m_tabWidget->setTabText(m_nTabSectionHeader, tr("Section"));
     m_tabWidget->setTabText(m_nTabExportFunction, tr("Export Functions"));
+    m_tabWidget->setTabText(m_nTabImportFunction, tr("Import"));
+    
 
-
-    CPEInfo& peInfo = m_gd.GetPEInfo();
+    CPEInfo& peInfo = TaskMgr::instance()->GetPEInfo();
     if (!peInfo.loaded())
     {
         return;
@@ -164,17 +163,17 @@ void PEMainWindow::retranslateUi()
 
 void PEMainWindow::updateDataDirectory()
 {
-    CPEInfo& peInfo = m_gd.GetPEInfo();
+    CPEInfo& peInfo = TaskMgr::instance()->GetPEInfo();
     if (!peInfo.loaded())
     {
         return;
     }
-    m_dataDirectoryTbl->reloadAllData(peInfo);
+    m_dataDirectoryTbl->reload(peInfo.getDataDirectoryElemCnt());
 }
 
 
 void PEMainWindow::onShowPEInfo() {
-    CPEInfo& peInfo = m_gd.GetPEInfo();
+    CPEInfo& peInfo = TaskMgr::instance()->GetPEInfo();
     bool bLoaded = peInfo.loaded();
     m_btnRVATrans->setEnabled(bLoaded);
     QString strTitle = "PETools";
@@ -186,7 +185,7 @@ void PEMainWindow::onShowPEInfo() {
         QFile file(strFilePath);
         QFileInfo fileInfo(file);
         QString fileName = fileInfo.fileName();
-        strTitle += QString("PETools - [%1] - [%2]").arg(fileName).arg(strArchInfo);
+        strTitle += QString(" - [%1] - [%2]").arg(fileName).arg(strArchInfo);
     }
     setWindowTitle(strTitle);
    
@@ -202,7 +201,7 @@ void PEMainWindow::onShowPEInfo() {
 
 void PEMainWindow::onShowExportTable()
 {
-    CPEInfo& peInfo = m_gd.GetPEInfo();
+    CPEInfo& peInfo = TaskMgr::instance()->GetPEInfo();
     if (peInfo.loaded())
     {
         m_exportFunctionWidget->reloadExportDirectoryInfo(peInfo.getImageExportInfo());
@@ -210,8 +209,17 @@ void PEMainWindow::onShowExportTable()
     
 }
 
+void PEMainWindow::onShowImportTable()
+{
+    CPEInfo& peInfo = TaskMgr::instance()->GetPEInfo();
+    if (peInfo.loaded())
+    {
+       m_importTbl->reload(peInfo.getImageImportInfo().size());
+    }
+}
+
 void PEMainWindow::onShowRVAToRAWWindow() {
-    RvaToFoaWindow *rvaToFoaWindow = new RvaToFoaWindow(m_gd.GetPEInfo());
+    RvaToFoaWindow *rvaToFoaWindow = new RvaToFoaWindow(TaskMgr::instance()->GetPEInfo());
     //rvaToFoaWindow->setWindowFlag(Qt::FramelessWindowHint);
     
     rvaToFoaWindow->onShow();
@@ -284,17 +292,43 @@ void PEMainWindow::ShowAboutDialog()
 }
 
 
+void PEMainWindow::onUpdateUI(int nTaskType)
+{
+    switch (nTaskType)
+    {
+    case PE_TASK_TYPE_LOAD_BASIC:
+    {
+        onShowPEInfo();
+        break;
+    }
+
+    case PE_TASK_TYPE_LOAD_EAT:
+    {
+        onShowExportTable();
+        break;
+    }
+
+    case PE_TASK_TYPE_LOAD_IDT:
+    {
+        onShowImportTable();
+        break;
+    }
+    }
+}
+
 
 void PEMainWindow::onStartLoadPE(const QString& fileName) {
-    qDebug() << "Selected file path : " << fileName << ", ThreadID: " << QThread::currentThreadId();
+    qDebug() << "Selected file path : " << fileName << ", Thread: " << QThread::currentThread();
     QString strLblText = fileName;
 #ifdef Q_OS_WIN
     // fileName.replace("/", QDir::separator());
     strLblText.replace("/", "\\");
 #endif
     m_lblPEPath->setText(strLblText);
-    emit startLoadPEBasic(fileName);
+
     //start pe loader thread
+    TaskMgr::instance()->startNewTask(fileName);
+    
 }
 
 
@@ -306,13 +340,22 @@ void PEMainWindow::dragEnterEvent(QDragEnterEvent* event)
     }
 }
 
+
 void PEMainWindow::dropEvent(QDropEvent* event)
 {
     foreach(const QUrl & url, event->mimeData()->urls()) {
         QString fileName = url.toLocalFile();
-        qDebug() << "Dropped file:" << fileName;
-        onStartLoadPE(fileName);
-        return;
+        if (withPEExt(fileName) )
+        {
+            QFileInfo fi(fileName);
+            if (fi.exists() && fi.isFile())
+            {
+                qDebug() << "Dropped file:" << fileName;
+                onStartLoadPE(fileName);
+                return;
+            }
+            
+        }
     }
 }
 

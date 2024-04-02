@@ -17,9 +17,9 @@
 #include <memory>
 #include <QThread>
 #include "rvatofoawindow.h"
-#include "globaldata.h"
 #include "common/qbasiclabel.h"
 #include "common/baseWindow.h"
+#include "TaskMgr.h"
 
 
 
@@ -31,7 +31,7 @@ class DataDirectoryWidget;
 class DosWidget;
 class sectionTable;
 class ExportFunctionWidget;
-
+class importTable;
 
 
 class PEMainWindow: public BaseWindow
@@ -50,7 +50,7 @@ private:
     
     
 private:
-    GlobalData m_gd;
+    //GlobalData m_gd;
     QVBoxLayout* _mainLayout;
     PEHeaderItemListWidget* m_itemListWidget; 
     DataDirectoryWidget* m_dataDirectoryTbl;
@@ -61,11 +61,13 @@ private:
     QTabWidget* m_tabWidget = nullptr;
     QLabel* m_lblDataDirectory;
     sectionTable* m_secTbl;
+    importTable* m_importTbl;
     ExportFunctionWidget* m_exportFunctionWidget;
     QTranslator *m_translator;
     bool m_bTranslator = false;
     int m_nTabSectionHeader = -1;
     int m_nTabExportFunction = -1;
+    int m_nTabImportFunction = -1;
 private:
     QMenu* m_pPEInfoMenu;
     QMenu* m_pHelpMenu;
@@ -80,11 +82,14 @@ private slots:
    void onOpenPE();
    void SwitchLanguage();
    void ShowAboutDialog();
+   void onUpdateUI(int nTaskType);
 signals:
     void startLoadPEBasic(const QString& fileName);
+    
 public slots:
       void onShowPEInfo();
       void onShowExportTable();
+      void onShowImportTable();
       void onShowRVAToRAWWindow();
       void onClose();
 };
