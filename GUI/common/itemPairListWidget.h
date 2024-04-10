@@ -39,11 +39,6 @@ private:
 };
 
 
-struct ItemPair
-{
-    QString key;
-    QString value;
-};
 
 class ItemPairListWidget : public BaseWindow
 {

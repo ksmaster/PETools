@@ -431,46 +431,83 @@ DWORD CPEInfo::foaToRva(DWORD foa) const {
 
 
 //
-void CPEInfo::loadOrigThunkDetail(DWORD orgFirstThunk) {
-	//cout << "OriginalFirstThunk(RVA): " << hex << setfill('0') << setw(8) << orgFirstThunk << endl;
-	DWORD orgThunkFoa = rvaToFoa(orgFirstThunk);
-	cout << "orgThunkFoa: " << orgThunkFoa << endl;
-	printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + orgThunkFoa, 0x30);
-
-	vector<ImportHintName> vecImportHintName;
-	IMAGE_THUNK_DATA *pImgThunkData = reinterpret_cast<IMAGE_THUNK_DATA*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + orgThunkFoa);
-	while (pImgThunkData->u1.AddressOfData != 0) {
-		if (pImgThunkData->u1.AddressOfData & 0x80000000) {
-			char cForwarderString[sizeof(DWORD) + 1] = { 0 };
-			memcpy(cForwarderString, &pImgThunkData->u1.AddressOfData, sizeof(DWORD));
-			cForwarderString[sizeof(DWORD)] = '\0';
-			cout << "ForwarderString: " << cForwarderString << endl;
+void CPEInfo::loadOrdinalOrHintNameTable(const vector<ULONGLONG>& vecAddr, vector<DWORD>& vecOrdinal, vector<ImportHintName>& vecImportHintName) {
+	ULONGLONG ullAddressOfData = 0;
+	for(unsigned int i=0; i < vecAddr.size(); ++i)
+	{
+		ullAddressOfData = vecAddr[i];
+		if (0 == ullAddressOfData)
+		{
+			break;
 		}
-		else {
-			DWORD foa = rvaToFoa(pImgThunkData->u1.AddressOfData);
-			if (-1 != foa)
-			{
-				IMAGE_IMPORT_BY_NAME* pImgThunkData = reinterpret_cast<IMAGE_IMPORT_BY_NAME*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + foa);
-				ImportHintName importHintName(*pImgThunkData);
-				vecImportHintName.emplace_back(importHintName);
-				//importHintName.showInfo();
-			}
-			else
+		bool bOrdinalFlag = m_bX86 ? (((DWORD)ullAddressOfData & 0x80000000) >> 31): ((ullAddressOfData & 0x8000000000000000) >> 63);
+		DWORD wOrdinal = bOrdinalFlag ? (ullAddressOfData & 0xFFFF):-1;
+		vecOrdinal.emplace_back(wOrdinal);
+		if (0== bOrdinalFlag)
+		{
+			DWORD foa = rvaToFoa(ullAddressOfData);
+			if (-1 == foa)
 			{
 				break;
 			}
+			IMAGE_IMPORT_BY_NAME* pImgImportByNameData = reinterpret_cast<IMAGE_IMPORT_BY_NAME*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + foa);
+			ImportHintName importHintName(*pImgImportByNameData);
+			vecImportHintName.emplace_back(importHintName);
 		}
-		++pImgThunkData;
+		else
+		{
+			ImportHintName importHintName;
+			vecImportHintName.emplace_back(importHintName);
+		}
 	}
-	m_mapOrigThunk[orgFirstThunk] = vecImportHintName;
 }
 
 
-void CPEInfo::loadFirstThunkDetail(DWORD firstThunk) {
+void CPEInfo::loadThunkDetail(const std::string& strDllName, DWORD firstThunk, bool bIAT,ImageImportNameInfoWrapper& imgImportNameInfoWrapper) {
 	//cout << "firstThunk(RVA): " << hex << setfill('0') << setw(8) << firstThunk << endl;
-	vector<DWORD> vecIAT;
-	getDWORDVecFromStartRva(firstThunk, vecIAT);
-	m_mapImportIAT[firstThunk] = vecIAT;
+	
+	if (m_bX86)
+	{
+		vector<DWORD> vecDWAddr;
+		getDWORDVecFromStartRva(firstThunk, vecDWAddr);
+		DWORD dwFoa = rvaToFoa(firstThunk);
+		if (-1 == dwFoa)
+		{
+			return;
+		}
+		if (bIAT)
+		{
+			imgImportNameInfoWrapper.setIAT(firstThunk, dwFoa, vecDWAddr);
+		}
+		else
+		{
+			imgImportNameInfoWrapper.setILT(firstThunk, vecDWAddr);
+		}
+		
+	}
+	else
+	{
+		vector<ULONGLONG> vecUllAddr;
+		getULONGLONGVecFromStartRva(firstThunk, vecUllAddr);
+		DWORD dwFoa = rvaToFoa(firstThunk);
+		if (-1 == dwFoa)
+		{
+			return;
+		}
+		if (bIAT)
+		{
+			imgImportNameInfoWrapper.setIAT(firstThunk, dwFoa, vecUllAddr);
+		}
+		else
+		{
+			imgImportNameInfoWrapper.setILT(firstThunk, vecUllAddr);
+		}
+	}
+	if (0==imgImportNameInfoWrapper.size())
+	{
+		loadOrdinalOrHintNameTable(bIAT ? imgImportNameInfoWrapper.m_vecIAT: imgImportNameInfoWrapper.m_vecILT,
+			imgImportNameInfoWrapper.m_vecOrdinal, imgImportNameInfoWrapper.m_vecHintNameTable);
+	}
 }
 
 const IMAGE_DATA_DIRECTORY * CPEInfo::getDataDirectory(DWORD index) const {
@@ -489,14 +526,46 @@ const IMAGE_DATA_DIRECTORY * CPEInfo::getDataDirectory(DWORD index) const {
 
 inline string CPEInfo::getStrFromRva(DWORD dwRva) {
 	DWORD dwFoaForStr = rvaToFoa(dwRva);
+	if (-1 == dwFoaForStr)
+	{
+		return "";
+	}
 	return string(reinterpret_cast<char*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + dwFoaForStr));
+}
+
+void CPEInfo::getULONGLONGVecFromStartRva(DWORD dwRva, std::vector<ULONGLONG>& vecUllValue, DWORD dwValueNum)
+{
+	//cout << "dwRva(RVA): " << hex << setfill('0') << setw(8) << dwRva << endl;
+	DWORD dwFoa = rvaToFoa(dwRva);
+	//printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapView) + dwFoa, 0x30);
+	if (-1 == dwFoa)
+	{
+		return;
+	}
+	ULONGLONG* pUllValue = reinterpret_cast<ULONGLONG*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + dwFoa);
+
+	if (0 == dwValueNum) {
+		while (*pUllValue != 0) {
+			vecUllValue.emplace_back(*pUllValue);
+			++pUllValue;
+		}
+	}
+	else {
+		for (DWORD i = 0; i < dwValueNum; ++i) {
+			vecUllValue.emplace_back(*pUllValue);
+			++pUllValue;
+		}
+	}
 }
 
 void CPEInfo::getDWORDVecFromStartRva(DWORD dwRva, std::vector<DWORD> &vecDwValue, DWORD dwValueNum) {
 	//cout << "dwRva(RVA): " << hex << setfill('0') << setw(8) << dwRva << endl;
 	DWORD dwFoa = rvaToFoa(dwRva);
 	//printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapView) + dwFoa, 0x30);
-
+	if (-1 == dwFoa)
+	{
+		return;
+	}
 	DWORD *pdwValue = reinterpret_cast<DWORD*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + dwFoa);
 	
 	if (0 == dwValueNum) {
@@ -517,9 +586,12 @@ void CPEInfo::getWORDVecFromStartRva(DWORD dwRva, std::vector<WORD> &vecDwValue,
     //cout << "dwRva(RVA): " << hex << setfill('0') << setw(8) << dwRva << endl;
     DWORD dwFoa = rvaToFoa(dwRva);
     //printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapView) + dwFoa, 0x30);
-
+	if (-1 == dwFoa)
+	{
+		return;
+	}
     WORD *pdwValue = reinterpret_cast<WORD*>(reinterpret_cast<unsigned char*>(m_pMapViewBase) + dwFoa);
-
+	
 	
     if (0 == dwValueNum) {
         while (*pdwValue != 0) {
@@ -544,7 +616,10 @@ void CPEInfo::loadImportDataDirectory() {
 	}
 	DWORD rva = pImportDataDirectory->VirtualAddress;
 	DWORD importDataDirFoa = rvaToFoa(rva);
-	
+	if (-1 == importDataDirFoa)
+	{
+		return;
+	}
 	//printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapView) + foa, pImportDataDirectory->Size);
 	DWORD dwImageImportDescSize = sizeof(IMAGE_IMPORT_DESCRIPTOR);
 //	assert((pImportDataDirectory->Size % dwImageImportDescSize) == 0);
@@ -554,17 +629,34 @@ void CPEInfo::loadImportDataDirectory() {
 	printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + importDataDirFoa, 0x40);
 
     while (pImgImportDesc->OriginalFirstThunk || pImgImportDesc->FirstThunk || pImgImportDesc->ForwarderChain || pImgImportDesc->Name) {
-		printHexBuffer(reinterpret_cast<const unsigned char*>(pImgImportDesc), sizeof(*pImgImportDesc));
+		//printHexBuffer(reinterpret_cast<const unsigned char*>(pImgImportDesc), sizeof(*pImgImportDesc));
+		std::string strImportDllName = getStrFromRva(pImgImportDesc->Name);
+		if (strImportDllName.length() == 0)
+		{
+			break;
+		}
+		if (0 == m_mapImgImportInfoWrapper.count(strImportDllName))
+		{
+			ImageImportNameInfoWrapper imgImportNameInfoWrapper;
+			m_mapImgImportInfoWrapper[strImportDllName] = imgImportNameInfoWrapper;
+		}
+		else
+		{
+			m_mapImgImportInfoWrapper[strImportDllName].init();
+		}
+		
         if (pImgImportDesc->OriginalFirstThunk) {
-            loadOrigThunkDetail(pImgImportDesc->OriginalFirstThunk);
+			loadThunkDetail(strImportDllName, pImgImportDesc->OriginalFirstThunk, false, m_mapImgImportInfoWrapper[strImportDllName]);
 		}
 		//cout << "TimeDateStamp: " << hex << setfill('0') << setw(8) << pImgImportDesc->TimeDateStamp << endl;
 		//cout << "ForwarderChain: " << hex << setfill('0') << setw(8) << pImgImportDesc->ForwarderChain << endl;
 		//cout << "Name(RVA): " << hex << setfill('0') << setw(8) << pImgImportDesc->Name << endl;
 		if (pImgImportDesc->FirstThunk) {
-			loadFirstThunkDetail(pImgImportDesc->FirstThunk);
+			
+			loadThunkDetail(strImportDllName, pImgImportDesc->FirstThunk,true, m_mapImgImportInfoWrapper[strImportDllName]);
 		}
-		IMAGE_IMPORT_DESCRIPTOR_Wrapper imgImportDescWrapper(*pImgImportDesc, getStrFromRva(pImgImportDesc->Name));
+		
+		IMAGE_IMPORT_DESCRIPTOR_Wrapper imgImportDescWrapper(*pImgImportDesc, strImportDllName);
 		m_vecImgImportDesc.emplace_back(imgImportDescWrapper);
 		//imgImportDescWrapper.showInfo();
 		++ pImgImportDesc;
@@ -572,14 +664,6 @@ void CPEInfo::loadImportDataDirectory() {
 }
 
 
-void CPEInfo::loadIATDataDirectory() {
-	const IMAGE_DATA_DIRECTORY * pIATDataDirectory = getDataDirectory(IMAGE_DIRECTORY_ENTRY_IAT);
-	if (!pIATDataDirectory) {
-		return;
-	}
-	DWORD iatDataDirFoa = rvaToFoa(pIATDataDirectory->VirtualAddress);
-	printHexBuffer(reinterpret_cast<unsigned char*>(m_pMapViewBase) + iatDataDirFoa, pIATDataDirectory->Size);
-}
  
 
 void CPEInfo::loadEATDataDirectory() {
@@ -641,4 +725,13 @@ void CPEInfo::testGetFuncByName(const std::string &strFuncName) {
     }
     
 
+}
+bool CPEInfo::getImageImportWrapperInfo(const std::string& strDllName, ImageImportNameInfoWrapper& imgImportInfoWrapper) const
+{
+	if (0==m_mapImgImportInfoWrapper.count(strDllName))
+	{
+		return false;
+	}
+	imgImportInfoWrapper = m_mapImgImportInfoWrapper.at(strDllName);
+	return true;
 }

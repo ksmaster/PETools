@@ -1,6 +1,6 @@
 #ifndef PELOADWORKER_H
 #define PELOADWORKER_H
-
+#include <QVariant>
 #include <QObject>
 #include "PEInfo.h"
 
@@ -37,24 +37,27 @@ public:
     explicit PELoadWorker(PE_TASK_TYPE, CPEInfo &peInfo, QObject *parent = nullptr);
     bool isRunning() { return m_bIsRunning; }
     void initFileName(const QString& strFileName) {  m_strPEFileName = strFileName;    }
+    void initIATFirstTrunk(DWORD dwFirstTrunk) { m_dwFirstTrunk = dwFirstTrunk; }
 private:
     void loadPEBasic();
+    void loadExportTable();
+    void loadImportTable();
 private:
     QString m_strPEFileName;
+    DWORD m_dwFirstTrunk=0;
     CPEInfo &m_peInfoRef;
     PE_TASK_TYPE m_taskType;
     bool m_bIsRunning=false;
 signals:
      void SignalStartNewPETask(const QString& fileName);
      void waitAndStartNewTask(const QString& fileName);
-     void relayTask(int nType);
-     void executeTask(int nType);
+     void relayTask(int nType, QVariant param);
+     void executeTask(int nType, QVariant param);
      void updateGUI(int nTaskType);
 public slots:
-    void doPETask(int nType);
+    void doPETask(int nType, QVariant param);
     void onSignalStartNewPETask(const QString& fileName);
-    void loadExportTable();
-    void loadImportTable();
+    
 };
 
 #endif // PELOADWORKER_H

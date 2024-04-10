@@ -1,5 +1,6 @@
 #include "TaskMgr.h"
 #include <QThread>
+
 #include "peloadworker.h"
 #include <QDebug>
 
@@ -49,7 +50,7 @@ void TaskMgr::init()
         }
         else
         {
-            connect(peLoadWorker, &PELoadWorker::relayTask, this, &TaskMgr::dispatchTask, Qt::DirectConnection);
+            connect(peLoadWorker, SIGNAL(relayTask(int, QVariant)), this, SLOT(dispatchTask(int, QVariant)));
             connect(peLoadWorker, &PELoadWorker::updateGUI, this, &TaskMgr::updateGUI);
         }
         m_workList.append(peLoadWorker);
@@ -64,6 +65,8 @@ void TaskMgr::startNewTask(const QString& strPEFileName)
     emit m_workList[PE_TASK_TYPE_LOAD_CONTROLLER]->SignalStartNewPETask(strPEFileName);
 }
 
+
+
 void TaskMgr::onWaitAndStartNewTask(const QString& strPEFile)
 {
     qDebug() << "TaskMgr::onWaitAndStartNewTask: thread: " << QThread::currentThread();
@@ -76,15 +79,15 @@ void TaskMgr::onWaitAndStartNewTask(const QString& strPEFile)
         }
         work->initFileName(strPEFile);
     }
-    emit m_workList[PE_TASK_TYPE_LOAD_BASIC]->executeTask(PE_TASK_TYPE_LOAD_BASIC);
+    emit m_workList[PE_TASK_TYPE_LOAD_BASIC]->executeTask(PE_TASK_TYPE_LOAD_BASIC, QVariant(0));
 }
 
-void TaskMgr::dispatchTask(int nTaskType)
+void TaskMgr::dispatchTask(int nTaskType, QVariant param)
 {
     if (nTaskType >= 0 && nTaskType < m_workList.length())
     {
         qDebug() << "TaskMgr::dispatchTask: [" << getPETaskName(nTaskType) << "], thread: " << QThread::currentThread();
-        emit m_workList[nTaskType]->executeTask(nTaskType);
+        emit m_workList[nTaskType]->executeTask(nTaskType, param);
         return;
     }
     qDebug() << "error nTaskType: " << nTaskType;

@@ -16,7 +16,7 @@ DataDirectoryWidget::DataDirectoryWidget(const CPEInfo& _peInfo, QWidget *parent
 QList<ColInfo> DataDirectoryWidget::getColsInfo()
 {
     QList<ColInfo> colInfos = {
-        {"",         140,  },
+        {"",         160,  },
         {tr("RVA"),  120,  },
         {tr("FOA"),  120,  },
         {tr("Size"), 120,  },

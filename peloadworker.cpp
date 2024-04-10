@@ -7,12 +7,11 @@
 PELoadWorker::PELoadWorker(PE_TASK_TYPE taskType, CPEInfo &peInfo, QObject *parent) : QObject(parent), m_taskType(taskType),
 m_peInfoRef(peInfo)
 {
-    connect(this, &PELoadWorker::executeTask, this, &PELoadWorker::doPETask);
+    connect(this, SIGNAL(executeTask(int, QVariant)), this, SLOT(doPETask(int, QVariant)));
     connect(this, &PELoadWorker::SignalStartNewPETask, this, &PELoadWorker::onSignalStartNewPETask);
-    
 }
 
-void PELoadWorker::doPETask(int nType)
+void PELoadWorker::doPETask(int nType, QVariant param)
 {
     CBinaryStateGuard guard(m_bIsRunning, true);
     if (m_taskType != nType)
@@ -26,8 +25,8 @@ void PELoadWorker::doPETask(int nType)
         loadPEBasic();
         if (m_peInfoRef.loaded())
         {
-            emit relayTask(PE_TASK_TYPE_LOAD_EAT);
-            emit relayTask(PE_TASK_TYPE_LOAD_IDT);
+            emit relayTask(PE_TASK_TYPE_LOAD_EAT, QVariant::fromValue(0));
+            emit relayTask(PE_TASK_TYPE_LOAD_IDT, QVariant::fromValue(0));
         }
         break;
     }

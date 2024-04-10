@@ -31,7 +31,8 @@ class DataDirectoryWidget;
 class DosWidget;
 class sectionTable;
 class ExportFunctionWidget;
-class importTable;
+class importWidget;
+
 
 
 class PEMainWindow: public BaseWindow
@@ -61,13 +62,11 @@ private:
     QTabWidget* m_tabWidget = nullptr;
     QLabel* m_lblDataDirectory;
     sectionTable* m_secTbl;
-    importTable* m_importTbl;
+    importWidget* m_importWidget;
     ExportFunctionWidget* m_exportFunctionWidget;
     QTranslator *m_translator;
     bool m_bTranslator = false;
-    int m_nTabSectionHeader = -1;
-    int m_nTabExportFunction = -1;
-    int m_nTabImportFunction = -1;
+    QMap<QString, int> m_tabMap;
 private:
     QMenu* m_pPEInfoMenu;
     QMenu* m_pHelpMenu;
@@ -78,6 +77,9 @@ private:
     QPushButton* m_btnClose;
 private:
 	void initUI();
+    void addTabItem(const QString&, QWidget*);
+    QList<ItemPair> getTabItemPairs();
+    void updateALlTabItemName();
 private slots:
    void onOpenPE();
    void SwitchLanguage();

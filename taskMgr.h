@@ -2,10 +2,11 @@
 #define _TASK_MRG__H_
 #include <QThread>
 #include <QQueue>
+#include <QVariant>
 #include "PEInfo.h"
 #include "peloadworker.h"
 
-
+ 
 
 
 class TaskMgr : public QObject
@@ -19,14 +20,16 @@ public:
     CPEInfo& GetPEInfo() {
         return m_peInfo;
     }
-    void dispatchTask(int nTaskType);
     void startNewTask(const QString&);
+   
 private:
     TaskMgr();
-    void onWaitAndStartNewTask(const QString& strPEFile);
 signals:
     void loadPEBasicTask(const QString& strPEFile);
     void updateGUI(int nTaskType);
+private slots:
+    void onWaitAndStartNewTask(const QString& strPEFile);
+    void dispatchTask(int nTaskType, QVariant param);
 private:
     CPEInfo m_peInfo;
     QList<PELoadWorker*> m_workList;
@@ -34,4 +37,5 @@ private:
     static TaskMgr* m_taskMgr;
 };
 
-#endif // GLOBALDATA_H
+#endif
+

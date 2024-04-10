@@ -18,7 +18,7 @@
 #include "sectionTable.h"
 #include "exportFunctionWidget.h"
 #include "importTable.h"
-
+#include "constants/constStrings.h"
 #include "Util.h"
 
 
@@ -33,6 +33,39 @@ PEMainWindow::PEMainWindow(QWidget* parent) :BaseWindow(parent)
     auto taskMgr = TaskMgr::instance();
     taskMgr->init();
     connect(taskMgr, &TaskMgr::updateGUI, this, &PEMainWindow::onUpdateUI);
+}
+
+
+void PEMainWindow::addTabItem(const QString& strTabKey, QWidget* pWidget)
+{
+    if (m_tabMap.contains(strTabKey))
+    {
+        return;
+    }
+    m_tabMap[strTabKey] = m_tabWidget->addTab(pWidget, "");
+}
+
+QList<ItemPair> PEMainWindow::getTabItemPairs()
+{
+    return QList<ItemPair>{
+        { STR_HEADER, STR_HEADER, },
+        { STR_DOS, STR_DOS, },
+        { STR_SECTION, tr("Section"), },
+        { STR_EXPORT, tr("Export Functions"), },
+        { STR_IMPORT, tr("Import"), },
+    };
+    
+}
+
+void PEMainWindow::updateALlTabItemName()
+{
+    for (auto& itemPair : getTabItemPairs())
+    {
+        if (m_tabMap.contains(itemPair.key))
+        {
+            m_tabWidget->setTabText(m_tabMap[itemPair.key], itemPair.value);
+        }
+    }
 }
 
  
@@ -87,21 +120,20 @@ void PEMainWindow::initUI()
    
     hLayoutHeader->addWidget(rightWidget, 7);
 
-    m_tabWidget->addTab(tabPEHeader, QString("Header"));
-
+    addTabItem(STR_HEADER, tabPEHeader);
 
     m_dosWidget = new DosWidget(m_tabWidget);
     m_dosWidget->setObjectName("Dos");
-    m_tabWidget->addTab(m_dosWidget, QString("Dos"));
+    addTabItem(STR_DOS, m_dosWidget);
 
     m_secTbl = new sectionTable(m_tabWidget);
-    m_nTabSectionHeader = m_tabWidget->addTab(m_secTbl, "");
+    addTabItem(STR_SECTION, m_secTbl);
 
     m_exportFunctionWidget = new ExportFunctionWidget(m_tabWidget);
-    m_nTabExportFunction = m_tabWidget->addTab(m_exportFunctionWidget, "");
+    addTabItem(STR_EXPORT, m_exportFunctionWidget);
 
-    m_importTbl = new importTable(TaskMgr::instance()->GetPEInfo(), m_tabWidget);
-    m_nTabImportFunction = m_tabWidget->addTab(m_importTbl, "");
+    m_importWidget = new importWidget(TaskMgr::instance()->GetPEInfo(), m_tabWidget);
+    addTabItem(STR_IMPORT, m_importWidget);
     
 
     int nStatusBarHeight = 30;
@@ -145,9 +177,7 @@ void PEMainWindow::retranslateUi()
     
     updateDataDirectory();
 
-    m_tabWidget->setTabText(m_nTabSectionHeader, tr("Section"));
-    m_tabWidget->setTabText(m_nTabExportFunction, tr("Export Functions"));
-    m_tabWidget->setTabText(m_nTabImportFunction, tr("Import"));
+    updateALlTabItemName();
     
 
     CPEInfo& peInfo = TaskMgr::instance()->GetPEInfo();
@@ -214,7 +244,7 @@ void PEMainWindow::onShowImportTable()
     CPEInfo& peInfo = TaskMgr::instance()->GetPEInfo();
     if (peInfo.loaded())
     {
-       m_importTbl->reload(peInfo.getImageImportInfo().size());
+       m_importWidget->reload((int)peInfo.getImageImportInfo().size());
     }
 }
 

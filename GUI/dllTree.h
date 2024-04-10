@@ -10,7 +10,6 @@ class QModelIndex;
 class QStandardItemModel;
 class QStandardItem;
 class QItemSelection;
-class QTreeView;
 
 
 
@@ -28,6 +27,7 @@ private slots:
     void selectTreeItem(const QItemSelection& selected, const QItemSelection& deselected);
     void onTreeViewPressed(QModelIndex modeIndex);
     void onScrollBarChange(int value);
+
 private:
     QVBoxLayout m_vLayout;
     QTreeView* m_pTreeView;

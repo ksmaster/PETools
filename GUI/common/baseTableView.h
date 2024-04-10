@@ -20,11 +20,13 @@ class baseTableView : public QTableView
 public:
     explicit baseTableView(QWidget *parent = nullptr);
     void reload(int nRowCnt);
+    void setSel(int nRow);
 protected:
 	virtual QList<ColInfo>  getColsInfo();
     virtual QList<QStandardItem*> createRow(int index);
     virtual void preSetItemDelegate();
     static QList<QStandardItem*> getStandardItemList(const QStringList &itemStrList);
+    void showToolTip(const QModelIndex&);
 private slots:
    
 private:

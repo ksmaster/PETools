@@ -5,6 +5,7 @@
 #include <QStyle>
 #include <QStandardItemModel>
 #include <QScrollBar>
+#include <QToolTip>
 #include "baseTableView.h"
 #include "Util.h"
 
@@ -19,7 +20,12 @@ baseTableView::baseTableView(QWidget *parent): QTableView(parent)
     QScrollBar* verticalScrollbar = this->verticalScrollBar();
     //verticalScrollbar->setStyleSheet(getCssContent(":/css/scrollBar.css"));
     verticalScrollbar->setFixedWidth(10);
+    //this->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    //this->horizontalHeader()->setStretchLastSection(false);
     //this->setStyleSheet(getCssContent("baseTableView.css"));
+    this->setMouseTracking(true);
+    this->setWordWrap(false);
+    connect(this, &QTableView::entered, this, &baseTableView::showToolTip);
 }
 
 QList<ColInfo>  baseTableView::getColsInfo()
@@ -44,7 +50,7 @@ QList<QStandardItem*> baseTableView::getStandardItemList(const QStringList& item
     for (auto &itemStr : itemStrList)
     {
         QStandardItem* item = new QStandardItem(itemStr);
-        item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+      //  item->setData(Qt::AlignLeft|Qt::AlignVCenter, Qt::TextAlignmentRole);
         item->setFlags(item->flags() & ~Qt::ItemIsEditable);
         items.append(item);
     }
@@ -75,7 +81,7 @@ void baseTableView::reload(int nRowCnt)
 
     verticalHeader()->setDefaultSectionSize(24);
     verticalHeader()->hide();
-    horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    horizontalHeader()->setDefaultAlignment(Qt::AlignLeft| Qt::AlignVCenter);
     preSetItemDelegate();
     for (int i = 0; i < nRowCnt; ++i)
     {
@@ -84,8 +90,26 @@ void baseTableView::reload(int nRowCnt)
         {
             m_model->appendRow(item);
          }
-    }
-    
-    
+    }   
 }
 
+
+void baseTableView::setSel(int nRow)
+{
+    QModelIndex index = m_model->index(nRow, 0);
+    selectionModel()->select(index, QItemSelectionModel::Select);
+}
+
+void baseTableView::showToolTip(const QModelIndex& index) {
+
+    if (!index.isValid()) {
+
+        qDebug() << "Invalid index";
+
+        return;
+
+    }
+
+    QToolTip::showText(QCursor::pos(), index.data().toString());
+
+}

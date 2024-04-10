@@ -7,6 +7,14 @@
 
 class BaseWindow;
 
+
+struct ItemPair
+{
+    QString key;
+    QString value;
+};
+
+
 extern QList<BaseWindow*> getAllTransWindows();
 
 class BaseWindow : public QWidget
